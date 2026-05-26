@@ -6,7 +6,7 @@
 //! 2. 启动时通过 `resolve_driver_path` 自动定位打包目录中的达梦 ODBC 驱动文件，
 //!    避免要求最终用户安装系统级驱动；定位失败时回退到 `DM8 ODBC DRIVER` 名称，
 //!    这要求系统已注册同名驱动。
-//! 3. 无条件编译开关，odbc-api 已是默认依赖。
+//! 3. 仅在 Windows x64、Linux x64 与 Linux arm64 目标上编译，macOS 不支持达梦。
 
 use super::DatabaseLoader;
 use crate::database::safe_batch_size;
@@ -28,55 +28,78 @@ pub struct DmLoader {
 ///
 /// 查找顺序：
 /// 1. 生产环境（Tauri 资源目录）：根据可执行文件路径推断。
-///    - macOS `.app` Bundle：`<exe_dir>/../Resources/bundled-drivers/dm-odbc/macos/`
-///    - Linux：`<exe_dir>/bundled-drivers/dm-odbc/linux/`
-///    - Windows：`<exe_dir>\bundled-drivers\dm-odbc\windows\`
-/// 2. 开发模式回退：`CARGO_MANIFEST_DIR/bundled-drivers/dm-odbc/<platform>/`。
+///    - Linux：`<exe_dir>/bundled-drivers/dm-odbc/linux/<arch>/`
+///    - Windows：`<exe_dir>\bundled-drivers\dm-odbc\windows\x64\`
+/// 2. 开发模式回退：`CARGO_MANIFEST_DIR/bundled-drivers/dm-odbc/<platform>/<arch>/`。
+/// 3. 兼容旧目录：`<platform>/` 直放驱动文件的老结构。
 ///
 /// 都未找到时返回 `None`，调用方应回退使用系统注册的驱动名 `DM8 ODBC DRIVER`。
 fn resolve_driver_path() -> Option<PathBuf> {
-    let driver_file = if cfg!(target_os = "macos") {
-        "libdmodbc.dylib"
-    } else if cfg!(target_os = "windows") {
+    let driver_file = if cfg!(target_os = "windows") {
         "dmodbc.dll"
     } else {
         "libdmodbc.so"
     };
 
+    let platform_subdir = if cfg!(target_os = "windows") {
+        "windows"
+    } else {
+        "linux"
+    };
+    let arch_subdir = if cfg!(target_arch = "aarch64") {
+        "arm64"
+    } else {
+        "x64"
+    };
+
     // 优先级 1：基于可执行文件位置定位资源目录（生产环境）
     if let Ok(exe_path) = std::env::current_exe() {
         if let Some(exe_dir) = exe_path.parent() {
-            let platform_dir = if cfg!(target_os = "macos") {
-                exe_dir.join("../Resources/bundled-drivers/dm-odbc/macos")
-            } else if cfg!(target_os = "windows") {
-                exe_dir.join("bundled-drivers/dm-odbc/windows")
+            let platform_dir = if cfg!(target_os = "windows") {
+                exe_dir
+                    .join("bundled-drivers/dm-odbc")
+                    .join(platform_subdir)
+                    .join(arch_subdir)
             } else {
-                exe_dir.join("bundled-drivers/dm-odbc/linux")
+                exe_dir
+                    .join("bundled-drivers/dm-odbc")
+                    .join(platform_subdir)
+                    .join(arch_subdir)
             };
 
             let driver_path = platform_dir.join(driver_file);
             if driver_path.exists() {
                 return Some(driver_path);
             }
+
+            let legacy_driver_path = platform_dir
+                .parent()
+                .map(|dir| dir.join(driver_file))
+                .filter(|path| path.exists());
+            if legacy_driver_path.is_some() {
+                return legacy_driver_path;
+            }
         }
     }
 
     // 优先级 2：开发模式从项目目录查找
-    let platform_subdir = if cfg!(target_os = "macos") {
-        "macos"
-    } else if cfg!(target_os = "windows") {
-        "windows"
-    } else {
-        "linux"
-    };
     let dev_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("bundled-drivers/dm-odbc")
         .join(platform_subdir)
+        .join(arch_subdir)
         .join(driver_file);
     if dev_path.exists() {
         Some(dev_path)
     } else {
-        None
+        let legacy_dev_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("bundled-drivers/dm-odbc")
+            .join(platform_subdir)
+            .join(driver_file);
+        if legacy_dev_path.exists() {
+            Some(legacy_dev_path)
+        } else {
+            None
+        }
     }
 }
 

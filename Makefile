@@ -54,28 +54,24 @@ lint:
 build:
 	$(TAURI_BIN) build
 
-# 构建macOS (通用二进制 arm64+x86_64)
-build-macos:
-	$(TAURI_BIN) build --target universal-apple-darwin
-
 # 构建macOS arm64
-build-macos-arm64:
+build-macos-arm:
 	$(TAURI_BIN) build --target aarch64-apple-darwin
 
-# 构建macOS x86_64
-build-macos-x64:
-	$(TAURI_BIN) build --target x86_64-apple-darwin
-
-# 构建Windows (需要交叉编译或在Windows上运行)
-build-windows:
+# 构建Windows x64（需要Windows或已配置交叉编译环境）
+build-windows-x64:
 	$(TAURI_BIN) build --target x86_64-pc-windows-msvc
 
-# 构建Linux (需要在Linux上或使用Docker)
-build-linux:
+# 构建Linux x64（需要Linux或已配置交叉编译环境）
+build-linux-x64:
 	$(TAURI_BIN) build --target x86_64-unknown-linux-gnu
 
-# 构建所有平台(当前机器能构建的)
-build-all: build-macos-arm64 build-macos-x64
+# 构建Linux arm64（需要Linux或已配置交叉编译环境）
+build-linux-arm:
+	$(TAURI_BIN) build --target aarch64-unknown-linux-gnu
+
+# 构建所有声明平台（需在对应OS或CI矩阵中执行）
+build-all: build-macos-arm build-windows-x64 build-linux-x64 build-linux-arm
 	@echo "构建完成。跨平台构建需要在对应OS上执行或使用CI。"
 
 # ==========================================
@@ -103,11 +99,12 @@ clean-rust:
 ## 驱动打包提示
 bundle-drivers:
 	@echo "=== 达梦 DM ODBC 驱动打包 ==="
-	@echo "请从 https://www.dameng.com/download/ 下载 DM8 安装包"
+	@echo "请从达梦官方 DM8 安装介质中提取 ODBC 驱动文件。"
+	@echo "macOS 版本不支持达梦数据库。"
 	@echo "将 ODBC 驱动文件放入以下目录："
-	@echo "  macOS:   src-tauri/bundled-drivers/dm-odbc/macos/libdmodbc.dylib"
-	@echo "  Linux:   src-tauri/bundled-drivers/dm-odbc/linux/libdmodbc.so"
-	@echo "  Windows: src-tauri/bundled-drivers/dm-odbc/windows/dmodbc.dll"
+	@echo "  Windows x64:   src-tauri/bundled-drivers/dm-odbc/windows/x64/dmodbc.dll"
+	@echo "  Linux x64:     src-tauri/bundled-drivers/dm-odbc/linux/x64/libdmodbc.so"
+	@echo "  Linux arm64:   src-tauri/bundled-drivers/dm-odbc/linux/arm64/libdmodbc.so"
 	@echo ""
 	@echo "Oracle 使用纯 Rust 驱动，无需额外文件。"
 
@@ -148,12 +145,11 @@ help:
 	@echo ""
 	@echo "构建打包:"
 	@echo "  make build            构建当前平台"
-	@echo "  make build-macos      构建macOS通用二进制"
-	@echo "  make build-macos-arm64 构建macOS ARM64"
-	@echo "  make build-macos-x64  构建macOS x86_64"
-	@echo "  make build-windows    构建Windows(需对应环境)"
-	@echo "  make build-linux      构建Linux(需对应环境)"
-	@echo "  make build-all        构建所有可用平台"
+	@echo "  make build-macos-arm  构建macOS ARM64"
+	@echo "  make build-windows-x64 构建Windows x64(需对应环境)"
+	@echo "  make build-linux-x64  构建Linux x64(需对应环境)"
+	@echo "  make build-linux-arm  构建Linux arm64(需对应环境)"
+	@echo "  make build-all        构建全部声明平台(需CI矩阵或交叉编译环境)"
 	@echo ""
 	@echo "驱动打包:"
 	@echo "  make bundle-drivers   显示达梦ODBC驱动打包说明"
@@ -169,7 +165,7 @@ help:
 	@echo "  make rebuild          清理并重新构建"
 
 .PHONY: install dev dev-web check test test-integration lint \
-	build build-macos build-macos-arm64 build-macos-x64 build-windows build-linux build-all \
+	build build-macos build-macos-arm build-windows build-windows-x64 build-linux build-linux-x64 build-linux-arm build-all \
 	bundle-drivers \
 	clean clean-rust rebuild \
 	db-up db-down db-status \

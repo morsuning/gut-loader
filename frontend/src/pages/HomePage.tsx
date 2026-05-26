@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import appPackage from "../../package.json";
 import {
   ArrowLeft,
   ArrowRight,
@@ -75,6 +76,8 @@ const STEPS: StepDef[] = [
     render: () => <ReportView />,
   },
 ];
+
+const APP_VERSION = `v${appPackage.version}`;
 
 export function HomePage() {
   const currentStep = useAppStore((s) => s.currentStep);
@@ -204,15 +207,17 @@ function Header({ onReset }: { onReset: () => void }) {
     <header className="sticky top-0 z-20 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
         <div className="flex items-center gap-3">
-          <div className="grid h-8 w-8 place-items-center rounded-md bg-foreground text-background">
-            <span className="font-mono text-xs font-semibold">GU</span>
-          </div>
+          <img
+            src="/app-icon.png"
+            alt=""
+            className="h-8 w-8 rounded-md shadow-sm"
+          />
           <div className="leading-tight">
             <p className="text-sm font-semibold tracking-tight">
               GUT&nbsp;Loader
             </p>
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              Universal data ingestion · v0.1
+              Universal data ingestion · {APP_VERSION}
             </p>
           </div>
         </div>

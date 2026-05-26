@@ -97,6 +97,37 @@ export const DB_TYPE_LABEL: Record<DbType, string> = {
   dameng: "达梦 DM",
 };
 
+const getBrowserPlatform = () => {
+  const nav = globalThis.navigator;
+  const userAgentPlatform =
+    (nav as Navigator & { userAgentData?: { platform?: string } }).userAgentData
+      ?.platform ?? "";
+  return `${userAgentPlatform} ${nav?.platform ?? ""} ${nav?.userAgent ?? ""}`;
+};
+
+export const DM_SUPPORTED_ON_CURRENT_PLATFORM = (() => {
+  const platform = getBrowserPlatform().toLowerCase();
+  return platform.includes("win") || platform.includes("linux");
+})();
+
+export const DB_TYPE_OPTIONS = Object.entries(DB_TYPE_LABEL).filter(([key]) => {
+  return key !== "dameng" || DM_SUPPORTED_ON_CURRENT_PLATFORM;
+}) as [DbType, string][];
+
+export const normalizeDbTypeForCurrentPlatform = (dbType: DbType): DbType => {
+  if (dbType === "dameng" && !DM_SUPPORTED_ON_CURRENT_PLATFORM) {
+    return "mysql";
+  }
+  return dbType;
+};
+
+export const DB_TYPE_PLATFORM_NOTE: Partial<Record<DbType, string>> = {
+  dameng: "仅 Windows x64、Linux x64 与 Linux arm64 可用",
+};
+
+export const DM_UNSUPPORTED_MESSAGE =
+  "达梦 DM 仅在 Windows x64、Linux x64 与 Linux arm64 版本可用。";
+
 export const DB_TYPE_DEFAULT_PORT: Record<DbType, number> = {
   mysql: 3306,
   txsql: 3306,

@@ -196,7 +196,7 @@ graph TB
 - MySQL 占位符使用 `?`，PostgreSQL 使用编号 `$N` 并附加 `::TEXT/::NUMERIC/::BIGINT` 显式类型转换后缀；PG 数值列空字符串绑定为 `NULL`
 - `safe_batch_size(column_count, desired)` 以 60000 参数上限为基准动态收缩批次行数，确保 `字段数 × 行数 ≤ 60000`
 - Oracle 适配器基于 oracle-rs 0.1（纯 Rust TNS 协议驱动）实现完整的连接、建表、批量插入、行数查询能力。选择 oracle-rs 的理由：它以纯 Rust 实现 Oracle TNS 协议，不依赖 Oracle Instant Client / OCI / ODPI-C 等任何系统库，使最终二进制可在零 Oracle 客户端环境下运行。连接管理：使用 [`oracle_rs::Config::new(host, port, service, user, password)`] + [`oracle_rs::Connection::connect_with_config`] 建立异步会话；Connection 内部以互斥锁串行化协议交互，可在 `&self` 上并发调用。可选 `schema` 通过 `ALTER SESSION SET CURRENT_SCHEMA` 生效并作为表名限定前缀。DDL 策略：建表前查询 `user_tables`（或有 schema 时查 `all_tables`）数据字典判断表是否已存在，已存在则跳过；类型映射 Varchar(n) -> `VARCHAR2(n)`、Decimal(m,n) -> `NUMBER(m,n)`、Int(n) -> `NUMBER(19)`；表名与列名使用双引号转义。批量插入：采用 [`oracle_rs::BatchBuilder::add_row`] 逐行累加绑定参数，单次 [`oracle_rs::Connection::execute_batch`] 提交一个分片；数值列占位符使用 `TO_NUMBER(NULLIF(:n, ''))` 包装以将空串安全转为 NULL；单个分片失败仅记录警告日志不中断后续批次，完成后调用 `Connection::commit` 统一提交。关闭路径调用 `Connection::close` 主动发送 logoff 报文并断开 TCP 连接
-- 达梦适配器基于 odbc-api crate（ODBC 协议）实现完整能力，默认参与编译。选择 odbc-api 的理由：达梦未提供 Rust 原生驱动，ODBC 是其官方支持的通用接入协议，odbc-api 是 Rust 生态中最成熟的 ODBC 封装。驱动发现策略：`resolve_driver_path()` 在构造 `DmLoader` 时依次尝试 ® 可执行文件相对位置的资源目录（macOS `.app` 走 `Contents/Resources/bundled-drivers/dm-odbc/macos/libdmodbc.dylib`、Linux `bundled-drivers/dm-odbc/linux/libdmodbc.so`、Windows `bundled-drivers\\dm-odbc\\windows\\dmodbc.dll`）® 开发模式的 `CARGO_MANIFEST_DIR/bundled-drivers/dm-odbc/<platform>/`，两者都未命中时回退使用系统注册名 `DM8 ODBC DRIVER`。异步包装策略：由于 ODBC `Connection` 与 `Environment` 不是 Send + Sync，采用持有连接字符串、每次操作在 `tokio::task::spawn_blocking` 内创建独立 `Environment` 和 `Connection` 的模式。连接字符串格式为 `Driver={<驱动路径或名称>};Server=host;TCP_PORT=port;DATABASE=db;UID=user;PWD={password}`，密码中的 `}` 转义为 `}}`。DDL 策略：建表前查询 `user_tables` 数据字典判断表是否已存在；类型映射 Varchar(n) -> `VARCHAR(n)`、Decimal(m,n) -> `DECIMAL(m,n)`、Int(n) -> `BIGINT`；表名与列名使用双引号转义。批量插入：使用 prepared statement 逐行通过 `into_parameter()` 将字符串转换为 ODBC 可绑定参数执行，手动事务模式下分批提交，单行失败仅记录警告不中断后续批次。打包集成：`src-tauri/bundled-drivers/dm-odbc/{macos,linux,windows}` 三平台目录与 `odbcinst.ini` 模板随 Tauri `bundle.resources` 字段（`bundled-drivers/**/*`）一并打入安装包，驱动二进制（`*.so` / `*.dylib` / `*.dll`）不随仓库提交，由开发者从达梦官网下载后放入对应平台目录
+- 达梦适配器仅在 Windows x86_64 / Linux x86_64 / Linux aarch64 上启用。选择 odbc-api 的理由：达梦未提供 Rust 原生驱动，ODBC 是其官方支持的通用接入协议，odbc-api 是 Rust 生态中最成熟的 ODBC 封装。驱动发现策略：`resolve_driver_path()` 在构造 `DmLoader` 时依次尝试可执行文件相对位置的资源目录与开发模式目录，目录层级固定为 `bundled-drivers/dm-odbc/<platform>/<arch>/`。macOS 不编译达梦适配器，也不提供入口；Windows 仅使用 `x64`，Linux 支持 `x64` 与 `arm64`。异步包装策略：由于 ODBC `Connection` 与 `Environment` 不是 Send + Sync，采用持有连接字符串、每次操作在 `tokio::task::spawn_blocking` 内创建独立 `Environment` 和 `Connection` 的模式。连接字符串格式为 `Driver={<驱动路径或名称>};Server=host;TCP_PORT=port;DATABASE=db;UID=user;PWD={password}`，密码中的 `}` 转义为 `}}`。DDL 策略：建表前查询 `user_tables` 数据字典判断表是否已存在；类型映射 Varchar(n) -> `VARCHAR(n)`、Decimal(m,n) -> `DECIMAL(m,n)`、Int(n) -> `BIGINT`；表名与列名使用双引号转义。批量插入：使用 prepared statement 逐行通过 `into_parameter()` 将字符串转换为 ODBC 可绑定参数执行，手动事务模式下分批提交，单行失败仅记录警告不中断后续批次。打包集成：`src-tauri/bundled-drivers/dm-odbc/{windows,linux}/{x64,arm64}` 三平台目录与 `odbcinst.ini` 模板随 Tauri `bundle.resources` 字段（`bundled-drivers/**/*`）一并打入安装包，驱动二进制（`*.so` / `*.dll`）不随仓库提交，由开发者从达梦官方安装介质中提取后放入对应平台目录
 
 ### 2.4 LLM 集成模块
 
@@ -675,7 +675,7 @@ cd src-tauri && cargo test --test integration_test -- --nocapture --test-threads
 命令分组：
 
 - 开发调试：`install`、`dev`、`dev-web`、`check`、`test`、`test-integration`、`lint`
-- 构建打包：`build`、`build-macos`、`build-macos-arm64`、`build-macos-x64`、`build-windows`、`build-linux`、`build-all`
+- 构建打包：`build`、`build-macos`、`build-macos-arm`、`build-windows`、`build-windows-x64`、`build-linux`、`build-linux-x64`、`build-linux-arm`、`build-all`
 - 数据库管理：`db-up`、`db-down`、`db-status`（基于 Docker，端口 MySQL 3307 / PostgreSQL 5433，密码 `testpass123`，库名 `gut_test`）
 - 驱动打包：`bundle-drivers`（显示达梦 ODBC 驱动打包说明）
 - 清理：`clean`、`clean-rust`、`rebuild`
@@ -737,7 +737,7 @@ gut-loader/
 │   ├── icons/                          # 应用图标
 │   ├── bundled-drivers/                # 随安装包打包的驱动资源
 │   │   ├── odbcinst.ini                # ODBC 驱动配置模板（DRIVER_PATH 占位符）
-│   │   └── dm-odbc/{macos,linux,windows}/  # 达梦 ODBC 驱动二进制存放目录
+│   │   └── dm-odbc/{linux,windows}/{arm64,x64}/  # 达梦 ODBC 驱动二进制存放目录
 │   ├── src/
 │   │   ├── parser/{mod,flg,dat}.rs
 │   │   ├── database/{mod,mysql,postgres,oracle,dm}.rs

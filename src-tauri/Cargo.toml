@@ -1,6 +1,6 @@
 [package]
 name = "gut-loader"
-version = "1.7.0"
+version = "1.8.4"
 edition = "2021"
 default-run = "gut-loader"
 
@@ -31,10 +31,12 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["v4"] }
 oracle-rs = "0.1"
-odbc-api = "8"
 
 [features]
 default = []
+
+[target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
+odbc-api = "8"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

@@ -37,6 +37,9 @@ import { useTauriCommands } from "@/hooks/useTauriCommands";
 import {
   DB_TYPE_DEFAULT_PORT,
   DB_TYPE_LABEL,
+  DB_TYPE_OPTIONS,
+  DM_SUPPORTED_ON_CURRENT_PLATFORM,
+  DM_UNSUPPORTED_MESSAGE,
   type DbType,
 } from "@/lib/types";
 
@@ -215,13 +218,18 @@ export function DatabaseConfig() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(DB_TYPE_LABEL).map(([k, label]) => (
+                {DB_TYPE_OPTIONS.map(([k, label]) => (
                   <SelectItem key={k} value={k}>
-                    {label}
+                    <span>{label}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {!DM_SUPPORTED_ON_CURRENT_PLATFORM && (
+              <p className="text-xs text-muted-foreground">
+                {DM_UNSUPPORTED_MESSAGE}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5 md:col-span-5">
@@ -412,7 +420,12 @@ export function DatabaseConfig() {
               <Button
                 type="button"
                 onClick={handleAiParse}
-                disabled={parsing || !aiText.trim() || !llmConfig.api_url || !llmConfig.model}
+                disabled={
+                  parsing ||
+                  !aiText.trim() ||
+                  !llmConfig.api_url ||
+                  !llmConfig.model
+                }
                 className="gap-2"
               >
                 {parsing ? (

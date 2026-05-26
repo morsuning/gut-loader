@@ -1,5 +1,6 @@
 //! 数据库适配模块：统一抽象多种关系型数据库的连接与批量入库能力。
 
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub mod dm;
 pub mod mysql;
 pub mod oracle;
@@ -8,6 +9,17 @@ pub mod postgres;
 use crate::models::{ColumnDefinition, ColumnType, DataRow, DatabaseConfig, FlgMetadata};
 use anyhow::Result;
 use async_trait::async_trait;
+
+/// 当前平台是否支持达梦数据库。
+///
+/// 仅在 Windows x86_64 与 Linux x86_64 / aarch64 上启用，macOS 不提供达梦入口。
+pub fn dm_supported_on_current_platform() -> bool {
+    cfg!(all(target_os = "windows", target_arch = "x86_64"))
+        || cfg!(all(
+            target_os = "linux",
+            any(target_arch = "x86_64", target_arch = "aarch64")
+        ))
+}
 
 /// 数据库加载器统一接口
 #[async_trait]
@@ -48,9 +60,17 @@ pub async fn create_loader(config: &DatabaseConfig) -> Result<Box<dyn DatabaseLo
             let loader = oracle::OracleLoader::new(config).await?;
             Ok(Box::new(loader))
         }
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         "dameng" | "dm" => {
+            if !dm_supported_on_current_platform() {
+                anyhow::bail!("达梦数据库仅支持 Windows x86_64 与 Linux x86_64 / arm64 平台");
+            }
             let loader = dm::DmLoader::new(config).await?;
             Ok(Box::new(loader))
+        }
+        #[cfg(target_os = "macos")]
+        "dameng" | "dm" => {
+            anyhow::bail!("达梦数据库仅支持 Windows x86_64 与 Linux x86_64 / arm64 平台")
         }
         _ => anyhow::bail!("Unsupported database type: {}", config.db_type),
     }

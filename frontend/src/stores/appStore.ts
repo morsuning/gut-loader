@@ -8,6 +8,7 @@ import type {
   PreCheckResult,
   SavedDbConfig,
 } from "@/lib/types";
+import { normalizeDbTypeForCurrentPlatform } from "@/lib/types";
 
 const initialDbConfig: DatabaseConfig = {
   db_type: "mysql",
@@ -97,7 +98,15 @@ export const useAppStore = create<AppState>((set) => ({
 
   dbConfig: initialDbConfig,
   setDbConfig: (config) =>
-    set((state) => ({ dbConfig: { ...state.dbConfig, ...config } })),
+    set((state) => ({
+      dbConfig: {
+        ...state.dbConfig,
+        ...config,
+        db_type: normalizeDbTypeForCurrentPlatform(
+          (config.db_type ?? state.dbConfig.db_type) as DatabaseConfig["db_type"],
+        ),
+      },
+    })),
 
   llmConfig: initialLlmConfig,
   setLlmConfig: (config) =>
@@ -158,7 +167,13 @@ export const useAppStore = create<AppState>((set) => ({
       const found = state.savedDbConfigs.find((c) => c.id === id);
       if (!found) return {};
       const { id: _id, name: _name, ...rest } = found;
-      return { dbConfig: { ...rest, password: "" } };
+      return {
+        dbConfig: {
+          ...rest,
+          password: "",
+          db_type: normalizeDbTypeForCurrentPlatform(rest.db_type),
+        },
+      };
     }),
 
   reset: () =>
