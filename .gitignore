@@ -1,0 +1,41 @@
+# Dependencies
+frontend/node_modules
+frontend/dist
+frontend/dist-ssr
+*.local
+
+# Editor directories
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build artifacts
+src-tauri/target
+src-tauri/gen
+src-tauri/Cargo.lock
+
+# Environment variables
+.env
+.env.*.local
+
+docs/archives
+
+# 达梦 ODBC 驱动二进制（由开发者从达梦官网下载放入）
+src-tauri/bundled-drivers/dm-odbc/**/*.so
+src-tauri/bundled-drivers/dm-odbc/**/*.dylib
+src-tauri/bundled-drivers/dm-odbc/**/*.dll

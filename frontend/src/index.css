@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 98%;
+    --foreground: 222 30% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 30% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 30% 11%;
+
+    --primary: 222 35% 14%;
+    --primary-foreground: 40 33% 98%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 35% 14%;
+
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 38 95% 60%;
+    --accent-foreground: 24 95% 14%;
+
+    --destructive: 0 75% 52%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 89%;
+    --input: 220 13% 89%;
+    --ring: 222 35% 14%;
+
+    --radius: 0.6rem;
+  }
+
+  .dark {
+    --background: 222 30% 7%;
+    --foreground: 40 25% 96%;
+
+    --card: 222 25% 10%;
+    --card-foreground: 40 25% 96%;
+
+    --popover: 222 25% 10%;
+    --popover-foreground: 40 25% 96%;
+
+    --primary: 40 25% 96%;
+    --primary-foreground: 222 35% 12%;
+
+    --secondary: 222 20% 16%;
+    --secondary-foreground: 40 25% 96%;
+
+    --muted: 222 20% 14%;
+    --muted-foreground: 220 10% 65%;
+
+    --accent: 38 95% 60%;
+    --accent-foreground: 24 95% 14%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 20% 18%;
+    --input: 222 20% 18%;
+    --ring: 38 95% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  html,
+  body,
+  #root {
+    @apply bg-background text-foreground;
+  }
+
+  body {
+    font-family:
+      "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Roboto, Helvetica, Arial, sans-serif;
+    font-feature-settings: "ss01", "cv11", "calt";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  code,
+  pre,
+  .font-mono,
+  [class*="font-mono"] {
+    font-family:
+      "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", "Courier New", monospace;
+    font-feature-settings: "ss02", "cv01", "zero";
+  }
+
+  /* 通用数字等宽 */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 滚动条样式统一 - Webkit (Chrome, Edge, Safari) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* 文本选中高亮色统一 */
+  ::selection {
+    background-color: hsl(var(--accent) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
+  /* Windows 高对比度模式兼容 */
+  @media (forced-colors: active) {
+    *:focus-visible {
+      outline: 2px solid CanvasText;
+      outline-offset: 2px;
+    }
+  }
+}
+
+@layer utilities {
+  /* 极淡的网格背景，作为 wizard 主画布的纹理 */
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 56px 56px;
+    background-position: -1px -1px;
+  }
+}

@@ -1,0 +1,60 @@
+[package]
+name = "gut-loader"
+version = "0.1.0"
+edition = "2021"
+default-run = "gut-loader"
+
+[lib]
+name = "gut_loader_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-fs = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+flate2 = "1"
+sqlx = { version = "0.8", features = [
+    "runtime-tokio-rustls",
+    "mysql",
+    "postgres",
+] }
+reqwest = { version = "0.12", features = ["json"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2"
+anyhow = "1"
+async-trait = "0.1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1", features = ["v4"] }
+oracle-rs = "0.1"
+odbc-api = "8"
+
+[features]
+default = []
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+tokio-test = "0.4"
+
+[[bench]]
+name = "gut_benchmark"
+harness = false
+
+[[bin]]
+name = "gut-loader"
+path = "src/main.rs"
+
+[[bin]]
+name = "generate_test_data"
+path = "src/bin/generate_test_data.rs"
+
+[[bin]]
+name = "run_benchmark"
+path = "src/bin/run_benchmark.rs"

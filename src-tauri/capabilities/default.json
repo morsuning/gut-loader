@@ -1,0 +1,21 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "default",
+    "description": "默认应用权限能力配置",
+    "windows": [
+        "main"
+    ],
+    "permissions": [
+        "core:default",
+        "core:window:default",
+        "core:webview:default",
+        "core:event:default",
+        "core:app:default",
+        "dialog:default",
+        "shell:default",
+        "fs:default",
+        "fs:allow-read-text-file",
+        "fs:allow-read-dir",
+        "fs:allow-exists"
+    ]
+}
