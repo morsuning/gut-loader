@@ -88,13 +88,13 @@ make help
 |------|------|
 | `make build` | 构建当前平台 Tauri 应用 |
 | `make build-macos-arm` | 构建 macOS Apple Silicon（aarch64-apple-darwin） |
-| `make build-windows-x64` | 构建 Windows MSVC 包（x86_64-pc-windows-msvc，需对应平台或交叉编译环境） |
-| `make build-linux-x64` | 构建 Linux GNU x64 包（x86_64-unknown-linux-gnu，需对应平台或 Docker） |
-| `make build-linux-arm` | 构建 Linux GNU arm64 包（aarch64-unknown-linux-gnu，需对应平台或 Docker） |
-| `make build-all` | 在当前环境按声明矩阵执行构建目标 |
+| `make build-windows-x64` | 构建 Windows x64 包；macOS 下使用 `x86_64-pc-windows-gnu + mingw-w64 + makensis` 交叉编译 |
+| `make build-linux-x64` | 构建 Linux GNU x64 包；macOS 下通过 Docker 构建 |
+| `make build-linux-arm` | 构建 Linux GNU arm64 包；macOS 下通过 Docker 构建 |
+| `make build-all` | 依次执行全部声明平台构建目标 |
 | `make bundle-drivers` | 显示达梦 ODBC 驱动打包说明 |
 
-> 跨平台目标依赖对应 Rust 三元组已通过 `rustup target add <triple>` 安装；推荐在对应 OS 或 CI 环境执行。
+> 跨平台目标在 macOS 上会自动选择对应的交叉编译路径：Windows x64 使用 GNU 工具链，Linux x64 / arm64 使用 Docker；如本机未安装对应依赖，请先按 [docs/BUILD.md](docs/BUILD.md) 补齐。
 
 ### 🐳 测试数据库管理
 
@@ -155,9 +155,9 @@ make db-down
 
 ```bash
 make build-macos-arm      # macOS ARM64
-make build-windows-x64    # Windows x64（需对应环境）
-make build-linux-x64      # Linux x64（需对应环境）
-make build-linux-arm      # Linux arm64（需对应环境）
+make build-windows-x64    # Windows x64（macOS 下使用交叉编译）
+make build-linux-x64      # Linux x64（macOS 下通过 Docker 构建）
+make build-linux-arm      # Linux arm64（macOS 下通过 Docker 构建）
 make build-all            # 声明矩阵构建
 ```
 

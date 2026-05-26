@@ -5,6 +5,37 @@
 
 # Tauri CLI 路径（从 frontend/node_modules 获取，运行于项目根目录以定位 src-tauri）
 TAURI_BIN := ./frontend/node_modules/.bin/tauri
+UNAME_S := $(shell uname -s)
+HOST_UID := $(shell id -u)
+HOST_GID := $(shell id -g)
+
+WINDOWS_MSVC_TARGET := x86_64-pc-windows-msvc
+WINDOWS_GNU_TARGET := x86_64-pc-windows-gnu
+LINUX_X64_TARGET := x86_64-unknown-linux-gnu
+LINUX_ARM_TARGET := aarch64-unknown-linux-gnu
+LINUX_DOCKER_IMAGE ?= rust:bookworm
+
+define docker_linux_build
+	docker run --rm --platform $(1) \
+		-e CI=1 \
+		-e CARGO_HOME=/cargo \
+		-e npm_config_cache=/npm-cache \
+		-v "$(CURDIR)":/work \
+		-v gut-loader-cargo:/cargo \
+		-v gut-loader-npm-cache:/npm-cache \
+		-v gut-loader-node-modules-$(2):/work/frontend/node_modules \
+		-w /work \
+		$(LINUX_DOCKER_IMAGE) \
+		bash -lc 'set -euo pipefail; \
+			apt-get update; \
+			apt-get install -y --no-install-recommends curl ca-certificates build-essential pkg-config libssl-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf; \
+			curl -fsSL https://deb.nodesource.com/setup_22.x | bash -; \
+			apt-get install -y --no-install-recommends nodejs; \
+			rustup target add $(3); \
+			cd frontend && npm ci; \
+			cd /work && ./frontend/node_modules/.bin/tauri build --target $(3); \
+			chown -R $(HOST_UID):$(HOST_GID) frontend/dist src-tauri/target'
+endef
 
 # ==========================================
 # 开发调试
@@ -58,21 +89,43 @@ build:
 build-macos-arm:
 	$(TAURI_BIN) build --target aarch64-apple-darwin
 
-# 构建Windows x64（需要Windows或已配置交叉编译环境）
+# 构建Windows x64；macOS 使用 GNU 工具链交叉编译，其他平台保留 MSVC 目标
 build-windows-x64:
-	$(TAURI_BIN) build --target x86_64-pc-windows-msvc
+ifeq ($(UNAME_S),Darwin)
+	@command -v x86_64-w64-mingw32-gcc >/dev/null || (echo "缺少 mingw-w64：brew install mingw-w64" && exit 1)
+	@command -v makensis >/dev/null || (echo "缺少 NSIS：brew install makensis" && exit 1)
+	rustup target add $(WINDOWS_GNU_TARGET)
+	PATH="/opt/homebrew/bin:$(PATH)" CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=x86_64-w64-mingw32-gcc $(TAURI_BIN) build --target $(WINDOWS_GNU_TARGET)
+else
+	$(TAURI_BIN) build --target $(WINDOWS_MSVC_TARGET)
+endif
 
-# 构建Linux x64（需要Linux或已配置交叉编译环境）
+# 构建Linux x64；macOS 使用 Docker Linux 环境构建
 build-linux-x64:
-	$(TAURI_BIN) build --target x86_64-unknown-linux-gnu
+ifeq ($(UNAME_S),Darwin)
+	$(call docker_linux_build,linux/amd64,linux-x64,$(LINUX_X64_TARGET))
+else
+	$(TAURI_BIN) build --target $(LINUX_X64_TARGET)
+endif
 
-# 构建Linux arm64（需要Linux或已配置交叉编译环境）
+# 构建Linux arm64；macOS 使用 Docker Linux 环境构建
 build-linux-arm:
-	$(TAURI_BIN) build --target aarch64-unknown-linux-gnu
+ifeq ($(UNAME_S),Darwin)
+	$(call docker_linux_build,linux/arm64,linux-arm64,$(LINUX_ARM_TARGET))
+else
+	$(TAURI_BIN) build --target $(LINUX_ARM_TARGET)
+endif
 
-# 构建所有声明平台（需在对应OS或CI矩阵中执行）
+# 平台别名
+build-macos: build-macos-arm
+
+build-windows: build-windows-x64
+
+build-linux: build-linux-x64
+
+# 构建所有声明平台
 build-all: build-macos-arm build-windows-x64 build-linux-x64 build-linux-arm
-	@echo "构建完成。跨平台构建需要在对应OS上执行或使用CI。"
+	@echo "构建完成。macOS 下 Windows x64 使用 mingw-w64，Linux x64/arm64 使用 Docker。"
 
 # ==========================================
 # 清理
@@ -146,10 +199,10 @@ help:
 	@echo "构建打包:"
 	@echo "  make build            构建当前平台"
 	@echo "  make build-macos-arm  构建macOS ARM64"
-	@echo "  make build-windows-x64 构建Windows x64(需对应环境)"
-	@echo "  make build-linux-x64  构建Linux x64(需对应环境)"
-	@echo "  make build-linux-arm  构建Linux arm64(需对应环境)"
-	@echo "  make build-all        构建全部声明平台(需CI矩阵或交叉编译环境)"
+	@echo "  make build-windows-x64 构建Windows x64(macOS下使用mingw-w64)"
+	@echo "  make build-linux-x64  构建Linux x64(macOS下使用Docker)"
+	@echo "  make build-linux-arm  构建Linux arm64(macOS下使用Docker)"
+	@echo "  make build-all        构建全部声明平台"
 	@echo ""
 	@echo "驱动打包:"
 	@echo "  make bundle-drivers   显示达梦ODBC驱动打包说明"

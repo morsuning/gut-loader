@@ -690,6 +690,9 @@ cd src-tauri && cargo test --test integration_test -- --nocapture --test-threads
 - Docker 容器启动命令带 `|| true`，已存在时不中断脚本；停止/移除统一重定向 `2>/dev/null` 屏蔽不存在的容器报错
 - `test-integration` 在执行前后自动启停容器，构成自包含的端到端验证闭环
 - `help` 目标使用 `@echo` 打印中文分类清单，避免 `make` 默认回显规则本身
+- `build-windows-x64` 在 macOS 上切换为 GNU 交叉编译路径：先检查 `mingw-w64` 与 `makensis`，再以 `x86_64-pc-windows-gnu` 目标和 `x86_64-w64-mingw32-gcc` 链接器调用 Tauri，生成 Windows 可执行文件与 NSIS 安装包；非 macOS 平台继续保留 `x86_64-pc-windows-msvc`
+- `build-linux-x64` 与 `build-linux-arm` 在 macOS 上通过 Docker 运行 Linux 构建环境，分别以 `linux/amd64` 与 `linux/arm64` 平台执行 Tauri 打包；非 macOS 平台仍直接调用本机 Tauri 目标
+- `build-all` 直接串联各平台目标，形成统一入口
 - `clean` 同时删除 `frontend/node_modules`、`frontend/dist`、`src-tauri/target`，并执行 `cargo clean`，确保彻底回到初始状态
 
 ## 6. 项目结构

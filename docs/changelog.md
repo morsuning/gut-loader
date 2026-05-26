@@ -2,6 +2,14 @@
 
 本项目变更记录采用 [语义化版本](https://semver.org/lang/zh-CN/) 进行版本管理。
 
+## [1.8.5] - 2026-05-26
+
+### 变更
+
+- 新增 `docs/BUILD.md`，集中说明 macOS 下交叉编译 Windows x64、Linux x64 和 Linux arm64 所需依赖、命令与产物位置
+- Makefile 增加 macOS 交叉编译支持：Windows x64 使用 `x86_64-pc-windows-gnu + mingw-w64 + makensis`，Linux x64 / Linux arm64 使用 Docker 构建
+- README、PRD 与实现文档同步更新构建说明，统一 macOS 交叉编译入口与注意事项
+
 ## [1.8.4] - 2026-05-26
 
 ### 修复

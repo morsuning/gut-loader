@@ -1,0 +1,145 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1779792028860,
+  "projectRoot": "/Users/morsuning/Desktop/gut-loader",
+  "techStack": {
+    "languages": [
+      {
+        "name": "C/C++",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "Makefile"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "make build",
+    "testCommand": "make test",
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 5,
+      "lastAccessed": 1779792028316,
+      "keyFiles": [
+        "BUILD.md",
+        "IMPLEMENTATION.md",
+        "PRD.md",
+        "benchmark_report.md",
+        "changelog.md"
+      ]
+    },
+    "example_data": {
+      "path": "example_data",
+      "purpose": null,
+      "fileCount": 10,
+      "lastAccessed": 1779792028327,
+      "keyFiles": [
+        "employee.20260421.000000.0000.dat.gz",
+        "employee.20260421.000000.0000.flg",
+        "order.20260421.000000.0000.dat.gz",
+        "order.20260421.000000.0000.flg",
+        "product.20260421.000000.0000.dat.gz"
+      ]
+    },
+    "frontend": {
+      "path": "frontend",
+      "purpose": null,
+      "fileCount": 9,
+      "lastAccessed": 1779792028332,
+      "keyFiles": [
+        "components.json",
+        "index.html",
+        "package-lock.json",
+        "package.json",
+        "postcss.config.js"
+      ]
+    },
+    "src-tauri": {
+      "path": "src-tauri",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1779792028376,
+      "keyFiles": [
+        "Cargo.lock",
+        "Cargo.toml",
+        "build.rs",
+        "tauri.conf.json"
+      ]
+    },
+    "frontend/dist": {
+      "path": "frontend/dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 2,
+      "lastAccessed": 1779792028551,
+      "keyFiles": [
+        "app-icon.png",
+        "index.html"
+      ]
+    },
+    "frontend/node_modules": {
+      "path": "frontend/node_modules",
+      "purpose": "Dependencies",
+      "fileCount": 1,
+      "lastAccessed": 1779792028570,
+      "keyFiles": []
+    },
+    "frontend/public": {
+      "path": "frontend/public",
+      "purpose": "Public files",
+      "fileCount": 1,
+      "lastAccessed": 1779792028700,
+      "keyFiles": [
+        "app-icon.png"
+      ]
+    },
+    "frontend/src": {
+      "path": "frontend/src",
+      "purpose": "Source code",
+      "fileCount": 3,
+      "lastAccessed": 1779792028714,
+      "keyFiles": [
+        "App.tsx",
+        "index.css",
+        "main.tsx"
+      ]
+    },
+    "src-tauri/src": {
+      "path": "src-tauri/src",
+      "purpose": "Source code",
+      "fileCount": 3,
+      "lastAccessed": 1779792028800,
+      "keyFiles": [
+        "lib.rs",
+        "main.rs",
+        "models.rs"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}

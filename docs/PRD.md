@@ -327,14 +327,14 @@ DDL 类型映射：
 | 开发 | `make lint` | `cargo clippy -D warnings` 与 `tsc --noEmit` 双侧静态检查 |
 | 构建 | `make build` | 构建当前平台 Tauri 应用 |
 | 构建 | `make build-macos-arm` | 构建 macOS Apple Silicon 包 |
-| 构建 | `make build-windows-x64` / `build-linux-x64` / `build-linux-arm` | 构建 Windows x64 / Linux GNU x64 / Linux GNU arm64 包（需对应平台或 CI） |
-| 构建 | `make build-all` | 在当前环境按声明矩阵执行构建目标 |
+| 构建 | `make build-windows-x64` / `build-linux-x64` / `build-linux-arm` | 在 macOS 上分别通过 mingw-w64 或 Docker 构建 Windows x64 / Linux GNU x64 / Linux GNU arm64 包；在其他平台仍可按原生环境执行 |
+| 构建 | `make build-all` | 按声明矩阵执行全部构建目标 |
 | 数据库 | `make db-up` / `db-down` / `db-status` | 管理本地 Docker 测试数据库（MySQL 3307、PostgreSQL 5433） |
 | 驱动打包 | `make bundle-drivers` | 显示达梦 ODBC 驱动打包说明 |
 | 清理 | `make clean` / `clean-rust` / `rebuild` | 清理 frontend/node_modules、frontend/dist、cargo target；或仅清理 Rust 缓存；或清理后重新安装 |
 | 帮助 | `make help` | 默认目标，输出全部命令的中文说明 |
 
-说明：所有 Tauri CLI 调用通过 `./frontend/node_modules/.bin/tauri` 在项目根目录执行，确保正确定位 `src-tauri/` 目录；跨平台打包目标三元组需已通过 `rustup target add` 安装；跨平台打包推荐在对应 OS 或 CI 环境执行。
+说明：所有 Tauri CLI 调用通过 `./frontend/node_modules/.bin/tauri` 在项目根目录执行，确保正确定位 `src-tauri/` 目录；Windows x64 在 macOS 上使用 `x86_64-pc-windows-gnu` + `mingw-w64` 交叉编译并生成 NSIS 安装包；Linux x64 / Linux arm64 在 macOS 上通过 Docker 容器构建；跨平台打包前需准备对应 Rust target 与系统级打包依赖。
 
 ## 3. 技术要求
 
