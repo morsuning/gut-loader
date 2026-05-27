@@ -434,7 +434,7 @@ graph LR
 - IPC 封装统一捕获异常并返回兜底值（空数组 / null / false），辅以 toast 提示，使 UI 在后端不可用时仍可走通
 - 应用图标资产以 `src-tauri/icons/icon.svg` 作为母版，导出 `icon.png`、Windows `icon.ico`、macOS `icon.icns`、各类 `Square*Logo.png` 与 `frontend/public/app-icon.png`；母版保留透明画布，所有导出尺寸的圆角外区域均为 alpha 透明，避免 Windows 快捷方式出现白底
 - 加载页 LIVE 指示灯仅在 `isLoading=true` 时以 ping 动画闪烁，日志面板使用原生 `<div>` + `overflow-y-auto` 实现自动滚动到底
-- 报告页使用 recharts BarChart + PieChart，颜色与 `--accent` / emerald / destructive 主题对齐；导出使用 `Blob` + `URL.createObjectURL`
+- 报告页使用 recharts BarChart + PieChart，颜色与 `--primary`（珊瑚色柱）/ `--success` / `--destructive`（饼图）语义色对齐；导出使用 `Blob` + `URL.createObjectURL`
 - 跨平台视觉一致性（`index.css`）：全局 `*` 选择器统一应用 `scrollbar-width: thin` 与 `scrollbar-color`（Firefox）、`-webkit-tap-highlight-color: transparent`；`body` 启用 `-webkit-font-smoothing: antialiased` 与 `-moz-osx-font-smoothing: grayscale` + `text-rendering: optimizeLegibility` 实现字体渲染统一；Webkit 滚动条通过 `::-webkit-scrollbar` / `::-webkit-scrollbar-track` / `::-webkit-scrollbar-thumb` 三级自定义（宽 8px、圆角 4px、主题边框色）；`::selection` 统一使用 accent 色 30% 透明度作为选中背景；`@media (forced-colors: active)` 媒体查询为高对比度模式下的 `focus-visible` 提供 2px 实线轮廓；首屏容器使用实体背景，避免全屏渐变、网格与 `backdrop-filter` 在无硬件加速 WebView2 中触发高成本软件渲染
 
 ```mermaid
