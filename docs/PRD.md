@@ -285,9 +285,10 @@ DDL 类型映射：
 
 - 字体：标题与正文使用 Inter Tight，所有数值与代码采用 JetBrains Mono 等宽显示
 - 主题：基于 shadcn 的双主题 CSS 变量，新增 amber 信号色作为 `--accent`，emerald 用于成功态、destructive 用于失败态
-- 全局背景：极淡网格纹理 + 顶部琥珀色光晕
+- 全局背景：使用纯色主题背景与实体卡片，避免在无硬件加速环境中产生昂贵的软件光栅化
 - 报告页：使用 recharts 渲染速率柱状图与成功/失败饼图，颜色与全局主题对齐
 - 操作反馈：所有 IPC 调用均带 loading / success / error 三态，通过 sonner toast 反馈
+- 应用图标：提供统一的透明背景图标资产，覆盖前端页眉、Tauri 应用图标、Windows 快捷方式、Windows Store Logo 与 macOS 图标，避免圆角外出现白色底色
 
 #### 2.8.6 跨平台视觉一致性
 
@@ -300,6 +301,7 @@ DDL 类型映射：
 | 文本选中 | `::selection` 使用 accent 色 30% 透明度作为背景色，避免各平台默认选中色差异 |
 | 高对比度模式 | 通过 `@media (forced-colors: active)` 为 `focus-visible` 元素提供 2px 实线轮廓，兼容 Windows 高对比度模式 |
 | 点击反馈 | `-webkit-tap-highlight-color: transparent` 移除移动端默认反射高亮 |
+| Windows 虚拟机启动 | Windows 启动时探测显示适配器；仅在 Microsoft Basic Display、远程显示或常见虚拟显卡等软件/虚拟路径下为 WebView2 注入 `--disable-gpu`，真实 GPU 环境保持硬件加速 |
 
 #### 2.8.7 实时事件订阅
 
@@ -325,16 +327,16 @@ DDL 类型映射：
 | 开发 | `make test` | 运行后端全部 cargo 测试（单元 + 集成） |
 | 开发 | `make test-integration` | 拉起 Docker MySQL/PostgreSQL 后运行集成测试，结束后自动停止与移除容器 |
 | 开发 | `make lint` | `cargo clippy -D warnings` 与 `tsc --noEmit` 双侧静态检查 |
-| 构建 | `make build` | 构建当前平台 Tauri 应用 |
+| 构建 | `make build` | 构建当前平台 Tauri release 应用，并将发布产物复制到项目根目录 `dist/` |
 | 构建 | `make build-macos-arm` | 构建 macOS Apple Silicon 包 |
-| 构建 | `make build-windows-x64` / `build-linux-x64` / `build-linux-arm` | 在 macOS 上分别通过 mingw-w64 或 Docker 构建 Windows x64 / Linux GNU x64 / Linux GNU arm64 包；在其他平台仍可按原生环境执行 |
-| 构建 | `make build-all` | 按声明矩阵执行全部构建目标 |
+| 构建 | `make build-windows-x64` / `build-linux-x64` / `build-linux-arm` | 分别构建 Windows x64、Linux GNU x64、Linux GNU arm64 包；Windows x64 使用 mingw-w64，Linux x64 / arm64 在 macOS 上使用 Docker Linux 构建环境 |
+| 构建 | `make build-all` | 清空 `dist/` 后按声明矩阵执行全部构建目标 |
 | 数据库 | `make db-up` / `db-down` / `db-status` | 管理本地 Docker 测试数据库（MySQL 3307、PostgreSQL 5433） |
 | 驱动打包 | `make bundle-drivers` | 显示达梦 ODBC 驱动打包说明 |
-| 清理 | `make clean` / `clean-rust` / `rebuild` | 清理 frontend/node_modules、frontend/dist、cargo target；或仅清理 Rust 缓存；或清理后重新安装 |
+| 清理 | `make clean` / `clean-dist` / `clean-rust` / `rebuild` | 清理 frontend/node_modules、frontend/dist、cargo target、dist；或仅清理 dist / Rust 缓存；或清理后重新安装 |
 | 帮助 | `make help` | 默认目标，输出全部命令的中文说明 |
 
-说明：所有 Tauri CLI 调用通过 `./frontend/node_modules/.bin/tauri` 在项目根目录执行，确保正确定位 `src-tauri/` 目录；Windows x64 在 macOS 上使用 `x86_64-pc-windows-gnu` + `mingw-w64` 交叉编译并生成 NSIS 安装包；Linux x64 / Linux arm64 在 macOS 上通过 Docker 容器构建；跨平台打包前需准备对应 Rust target 与系统级打包依赖。
+说明：所有 Tauri CLI 调用通过 `./frontend/node_modules/.bin/tauri` 在项目根目录执行，确保正确定位 `src-tauri/` 目录；Windows x64 在 macOS 上使用 `x86_64-pc-windows-gnu` + `mingw-w64` 交叉编译并生成 NSIS 安装包；Linux x64 / Linux arm64 分别使用 `x86_64-unknown-linux-gnu`、`aarch64-unknown-linux-gnu`，macOS 上通过 `Dockerfile.linux-build` 提供 GTK/WebKitGTK 4.1 等 Linux 系统依赖；跨平台打包前需准备对应 Rust target 与系统级打包依赖。发布产物统一归集到项目根目录 `dist/`，不再按平台拆分目录。
 
 ## 3. 技术要求
 
@@ -348,7 +350,7 @@ DDL 类型映射：
 | 数据库驱动 | sqlx 0.8（mysql + postgres）；Oracle 基于 oracle-rs 0.1（纯 Rust TNS 协议，默认参与编译，无需 Oracle Instant Client / OCI / ODPI-C）；达梦基于 odbc-api 8 默认参与编译，驱动二进制随 Tauri 资源打包分发 |
 | 平台支持 | macOS、Windows、Linux |
 | 测试环境 | Docker（可选，用于 MySQL / PostgreSQL 集成测试） |
-| 构建入口 | 根目录 `Makefile`，前端代码位于 `frontend/` 子目录，覆盖开发调试、多平台构建、测试数据库管理与清理 |
+| 构建入口 | 根目录 `Makefile`，前端代码位于 `frontend/` 子目录，覆盖开发调试、多平台 release 构建、测试数据库管理与清理；发布产物统一输出到 `dist/` |
 
 ## 4. 限制与约束
 

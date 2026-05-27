@@ -1,0 +1,91 @@
+<!-- 由 Codex 生成的应用图标母版：保留透明画布，避免 Windows 快捷方式圆角外出现白底。 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="GUT Loader application icon">
+  <defs>
+    <linearGradient id="tileGradient" x1="164" y1="130" x2="884" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="0.48" stop-color="#123044"/>
+      <stop offset="1" stop-color="#0B6B66"/>
+    </linearGradient>
+
+    <radialGradient id="warmBloom" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(364 178) rotate(62) scale(712 520)">
+      <stop offset="0" stop-color="#F8C24A" stop-opacity="0.34"/>
+      <stop offset="0.35" stop-color="#F8C24A" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#F8C24A" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="coolBloom" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(796 742) rotate(145) scale(620 468)">
+      <stop offset="0" stop-color="#22D3EE" stop-opacity="0.34"/>
+      <stop offset="0.45" stop-color="#22D3EE" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#22D3EE" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="streamGradient" x1="422" y1="216" x2="612" y2="652" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE08A"/>
+      <stop offset="0.5" stop-color="#F7B733"/>
+      <stop offset="1" stop-color="#F97316"/>
+    </linearGradient>
+
+    <linearGradient id="vaultBody" x1="260" y1="560" x2="748" y2="802" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F2F7F8"/>
+      <stop offset="0.52" stop-color="#CFDEE4"/>
+      <stop offset="1" stop-color="#8EA9B6"/>
+    </linearGradient>
+
+    <linearGradient id="vaultTop" x1="284" y1="544" x2="736" y2="642" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FAFEFF"/>
+      <stop offset="1" stop-color="#B6CCD7"/>
+    </linearGradient>
+
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#020617" flood-opacity="0.35"/>
+    </filter>
+
+    <filter id="streamGlow" x="-60%" y="-40%" width="220%" height="220%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#F59E0B" flood-opacity="0.34"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#FDE68A" flood-opacity="0.28"/>
+    </filter>
+
+    <clipPath id="tileClip">
+      <rect x="72" y="72" width="880" height="880" rx="206"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#tileClip)">
+    <rect x="72" y="72" width="880" height="880" rx="206" fill="url(#tileGradient)"/>
+    <rect x="72" y="72" width="880" height="880" rx="206" fill="url(#warmBloom)"/>
+    <rect x="72" y="72" width="880" height="880" rx="206" fill="url(#coolBloom)"/>
+
+    <path d="M166 306C286 245 403 220 526 229C671 240 782 301 873 414" fill="none" stroke="#5EEAD4" stroke-width="2" stroke-opacity="0.14"/>
+    <path d="M150 744C299 820 448 845 596 815C729 788 824 718 899 612" fill="none" stroke="#FDE68A" stroke-width="2" stroke-opacity="0.11"/>
+    <circle cx="512" cy="512" r="318" fill="none" stroke="#BAE6FD" stroke-width="2" stroke-opacity="0.11"/>
+    <circle cx="512" cy="512" r="214" fill="none" stroke="#BAE6FD" stroke-width="2" stroke-opacity="0.10"/>
+
+    <g opacity="0.7">
+      <rect x="320" y="326" width="78" height="18" rx="9" fill="#7DD3FC" opacity="0.52" transform="rotate(24 359 335)"/>
+      <rect x="632" y="312" width="72" height="18" rx="9" fill="#7DD3FC" opacity="0.48" transform="rotate(-22 668 321)"/>
+      <rect x="700" y="442" width="78" height="18" rx="9" fill="#7DD3FC" opacity="0.44" transform="rotate(24 739 451)"/>
+      <circle cx="280" cy="448" r="16" fill="#A5F3FC"/>
+      <circle cx="724" cy="404" r="14" fill="#A5F3FC"/>
+      <circle cx="690" cy="536" r="18" fill="#A5F3FC"/>
+    </g>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <path d="M268 610C268 546 756 546 756 610V744C756 808 268 808 268 744Z" fill="url(#vaultBody)"/>
+    <ellipse cx="512" cy="610" rx="244" ry="74" fill="url(#vaultTop)"/>
+    <ellipse cx="512" cy="610" rx="244" ry="74" fill="none" stroke="#315B75" stroke-width="8"/>
+    <path d="M268 676C268 740 756 740 756 676" fill="none" stroke="#4E7590" stroke-width="7" stroke-linecap="round"/>
+    <path d="M268 744C268 808 756 808 756 744" fill="none" stroke="#315B75" stroke-width="8" stroke-linecap="round"/>
+    <path d="M316 604C378 565 646 565 708 604" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-opacity="0.55"/>
+  </g>
+
+  <g filter="url(#streamGlow)">
+    <rect x="456" y="214" width="112" height="292" rx="28" fill="url(#streamGradient)"/>
+    <path d="M360 492H456V428H568V492H664L512 656Z" fill="url(#streamGradient)"/>
+    <path d="M478 236H546" stroke="#FFF3C4" stroke-width="11" stroke-linecap="round" stroke-opacity="0.55"/>
+    <path d="M438 492H586" stroke="#FFFBEB" stroke-width="8" stroke-linecap="round" stroke-opacity="0.18"/>
+  </g>
+
+  <rect x="72" y="72" width="880" height="880" rx="206" fill="none" stroke="#E0F2FE" stroke-width="3" stroke-opacity="0.20"/>
+  <path d="M214 116H708C836 116 908 188 908 316" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-opacity="0.14"/>
+</svg>

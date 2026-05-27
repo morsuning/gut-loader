@@ -6,35 +6,33 @@
 # Tauri CLI 路径（从 frontend/node_modules 获取，运行于项目根目录以定位 src-tauri）
 TAURI_BIN := ./frontend/node_modules/.bin/tauri
 UNAME_S := $(shell uname -s)
-HOST_UID := $(shell id -u)
-HOST_GID := $(shell id -g)
+DIST_DIR := dist
+APP_NAME := gut-loader
 
 WINDOWS_MSVC_TARGET := x86_64-pc-windows-msvc
 WINDOWS_GNU_TARGET := x86_64-pc-windows-gnu
 LINUX_X64_TARGET := x86_64-unknown-linux-gnu
 LINUX_ARM_TARGET := aarch64-unknown-linux-gnu
-LINUX_DOCKER_IMAGE ?= rust:bookworm
+LINUX_BUILDER_IMAGE := gut-loader-linux-builder
 
-define docker_linux_build
-	docker run --rm --platform $(1) \
-		-e CI=1 \
-		-e CARGO_HOME=/cargo \
-		-e npm_config_cache=/npm-cache \
-		-v "$(CURDIR)":/work \
-		-v gut-loader-cargo:/cargo \
-		-v gut-loader-npm-cache:/npm-cache \
-		-v gut-loader-node-modules-$(2):/work/frontend/node_modules \
-		-w /work \
-		$(LINUX_DOCKER_IMAGE) \
-		bash -lc 'set -euo pipefail; \
-			apt-get update; \
-			apt-get install -y --no-install-recommends curl ca-certificates build-essential pkg-config libssl-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf; \
-			curl -fsSL https://deb.nodesource.com/setup_22.x | bash -; \
-			apt-get install -y --no-install-recommends nodejs; \
-			rustup target add $(3); \
-			cd frontend && npm ci; \
-			cd /work && ./frontend/node_modules/.bin/tauri build --target $(3); \
-			chown -R $(HOST_UID):$(HOST_GID) frontend/dist src-tauri/target'
+define collect_release
+	@mkdir -p $(DIST_DIR)
+	@echo "归集 $(1) 发布产物到 $(DIST_DIR)/"
+	@find src-tauri/target/$(1)/release/bundle \
+		-maxdepth 3 -type f \
+		\( -name '*.dmg' -o -name '*.app.tar.gz' -o -name '*.app.tar.gz.sig' -o -name '*.msi' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o \( -path '*/bundle/*' -name '*.exe' \) \) \
+		-not -path '*/deps/*' \
+		-exec cp -f {} $(DIST_DIR)/ \; 2>/dev/null || true
+endef
+
+define collect_host_release
+	@mkdir -p $(DIST_DIR)
+	@echo "归集当前平台发布产物到 $(DIST_DIR)/"
+	@find src-tauri/target/release/bundle \
+		-maxdepth 3 -type f \
+		\( -name '*.dmg' -o -name '*.app.tar.gz' -o -name '*.app.tar.gz.sig' -o -name '*.msi' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o \( -path '*/bundle/*' -name '*.exe' \) \) \
+		-not -path '*/deps/*' \
+		-exec cp -f {} $(DIST_DIR)/ \; 2>/dev/null || true
 endef
 
 # ==========================================
@@ -84,36 +82,67 @@ lint:
 # 构建当前平台
 build:
 	$(TAURI_BIN) build
+	$(call collect_host_release)
 
 # 构建macOS arm64
 build-macos-arm:
 	$(TAURI_BIN) build --target aarch64-apple-darwin
+	$(call collect_release,aarch64-apple-darwin)
 
 # 构建Windows x64；macOS 使用 GNU 工具链交叉编译，其他平台保留 MSVC 目标
+# 构建前清理 NSIS bundle 目录中的旧版本安装包，避免 dist/ 中出现多个版本产物
 build-windows-x64:
 ifeq ($(UNAME_S),Darwin)
 	@command -v x86_64-w64-mingw32-gcc >/dev/null || (echo "缺少 mingw-w64：brew install mingw-w64" && exit 1)
 	@command -v makensis >/dev/null || (echo "缺少 NSIS：brew install makensis" && exit 1)
 	rustup target add $(WINDOWS_GNU_TARGET)
+	@rm -rf src-tauri/target/$(WINDOWS_GNU_TARGET)/release/bundle/nsis/*.exe
 	PATH="/opt/homebrew/bin:$(PATH)" CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=x86_64-w64-mingw32-gcc $(TAURI_BIN) build --target $(WINDOWS_GNU_TARGET)
+	$(call collect_release,$(WINDOWS_GNU_TARGET))
 else
+	@rm -rf src-tauri/target/$(WINDOWS_MSVC_TARGET)/release/bundle/nsis/*.exe
 	$(TAURI_BIN) build --target $(WINDOWS_MSVC_TARGET)
+	$(call collect_release,$(WINDOWS_MSVC_TARGET))
 endif
 
-# 构建Linux x64；macOS 使用 Docker Linux 环境构建
+# 构建Linux x64；macOS 使用 Docker 构建，Linux 可直接本地构建
+# 构建前清理 bundle 目录中的旧版本产物，避免 dist/ 中出现多个版本
 build-linux-x64:
 ifeq ($(UNAME_S),Darwin)
-	$(call docker_linux_build,linux/amd64,linux-x64,$(LINUX_X64_TARGET))
+	@echo "=== macOS 上使用 Docker 构建 Linux x64 ==="
+	@rm -rf src-tauri/target/$(LINUX_X64_TARGET)/release/bundle/deb/*.deb src-tauri/target/$(LINUX_X64_TARGET)/release/bundle/rpm/*.rpm src-tauri/target/$(LINUX_X64_TARGET)/release/bundle/appimage/*.AppImage
+	@docker build --platform linux/amd64 -t $(LINUX_BUILDER_IMAGE) -f Dockerfile.linux-build .
+	@docker run --rm --platform linux/amd64 \
+		-v "$(PWD):/app" \
+		$(LINUX_BUILDER_IMAGE) \
+		sh -c "cd /app/frontend && npm ci && cd /app && ./frontend/node_modules/.bin/tauri build --target $(LINUX_X64_TARGET)"
+	$(call collect_release,$(LINUX_X64_TARGET))
+	@echo "=== Linux x64 发布产物已输出到 $(DIST_DIR)/ ==="
 else
+	@rm -rf src-tauri/target/$(LINUX_X64_TARGET)/release/bundle/deb/*.deb src-tauri/target/$(LINUX_X64_TARGET)/release/bundle/rpm/*.rpm src-tauri/target/$(LINUX_X64_TARGET)/release/bundle/appimage/*.AppImage
+	rustup target add $(LINUX_X64_TARGET)
 	$(TAURI_BIN) build --target $(LINUX_X64_TARGET)
+	$(call collect_release,$(LINUX_X64_TARGET))
 endif
 
-# 构建Linux arm64；macOS 使用 Docker Linux 环境构建
+# 构建Linux arm64；macOS(Apple Silicon)使用 Docker arm64 镜像构建，Linux 可直接本地构建
+# 构建前清理 bundle 目录中的旧版本产物，避免 dist/ 中出现多个版本
 build-linux-arm:
 ifeq ($(UNAME_S),Darwin)
-	$(call docker_linux_build,linux/arm64,linux-arm64,$(LINUX_ARM_TARGET))
+	@echo "=== macOS 上使用 Docker 构建 Linux arm64 ==="
+	@rm -rf src-tauri/target/$(LINUX_ARM_TARGET)/release/bundle/deb/*.deb src-tauri/target/$(LINUX_ARM_TARGET)/release/bundle/rpm/*.rpm src-tauri/target/$(LINUX_ARM_TARGET)/release/bundle/appimage/*.AppImage
+	@docker build -t $(LINUX_BUILDER_IMAGE)-arm64 -f Dockerfile.linux-build --platform linux/arm64 .
+	@docker run --rm --platform linux/arm64 \
+		-v "$(PWD):/app" \
+		$(LINUX_BUILDER_IMAGE)-arm64 \
+		sh -c "cd /app/frontend && npm ci && cd /app && ./frontend/node_modules/.bin/tauri build --target $(LINUX_ARM_TARGET)"
+	$(call collect_release,$(LINUX_ARM_TARGET))
+	@echo "=== Linux arm64 发布产物已输出到 $(DIST_DIR)/ ==="
 else
+	@rm -rf src-tauri/target/$(LINUX_ARM_TARGET)/release/bundle/deb/*.deb src-tauri/target/$(LINUX_ARM_TARGET)/release/bundle/rpm/*.rpm src-tauri/target/$(LINUX_ARM_TARGET)/release/bundle/appimage/*.AppImage
+	rustup target add $(LINUX_ARM_TARGET)
 	$(TAURI_BIN) build --target $(LINUX_ARM_TARGET)
+	$(call collect_release,$(LINUX_ARM_TARGET))
 endif
 
 # 平台别名
@@ -124,8 +153,12 @@ build-windows: build-windows-x64
 build-linux: build-linux-x64
 
 # 构建所有声明平台
-build-all: build-macos-arm build-windows-x64 build-linux-x64 build-linux-arm
-	@echo "构建完成。macOS 下 Windows x64 使用 mingw-w64，Linux x64/arm64 使用 Docker。"
+build-all: clean-dist build-macos-arm build-windows-x64 build-linux-x64 build-linux-arm
+	@echo "构建完成。所有发布产物已统一归集到 $(DIST_DIR)/。"
+
+clean-dist:
+	rm -rf $(DIST_DIR)
+	mkdir -p $(DIST_DIR)
 
 # ==========================================
 # 清理
@@ -137,6 +170,7 @@ clean:
 	rm -rf frontend/dist
 	cd src-tauri && cargo clean
 	rm -rf src-tauri/target
+	rm -rf $(DIST_DIR)
 
 # 清理并重新安装
 rebuild: clean install
@@ -197,12 +231,12 @@ help:
 	@echo "  make lint             代码质量检查"
 	@echo ""
 	@echo "构建打包:"
-	@echo "  make build            构建当前平台"
-	@echo "  make build-macos-arm  构建macOS ARM64"
+	@echo "  make build            构建当前平台 release 版本并归集到 dist/"
+	@echo "  make build-macos-arm  构建macOS ARM64 release 版本"
 	@echo "  make build-windows-x64 构建Windows x64(macOS下使用mingw-w64)"
-	@echo "  make build-linux-x64  构建Linux x64(macOS下使用Docker)"
-	@echo "  make build-linux-arm  构建Linux arm64(macOS下使用Docker)"
-	@echo "  make build-all        构建全部声明平台"
+	@echo "  make build-linux-x64  构建Linux GNU x64(macOS下使用Docker)"
+	@echo "  make build-linux-arm  构建Linux GNU arm64(macOS下使用Docker)"
+	@echo "  make build-all        构建全部声明平台并统一输出到 dist/"
 	@echo ""
 	@echo "驱动打包:"
 	@echo "  make bundle-drivers   显示达梦ODBC驱动打包说明"
@@ -214,12 +248,13 @@ help:
 	@echo ""
 	@echo "清理:"
 	@echo "  make clean            清理所有构建产物"
+	@echo "  make clean-dist       仅清理 dist/ 归集目录"
 	@echo "  make clean-rust       仅清理Rust缓存"
 	@echo "  make rebuild          清理并重新构建"
 
 .PHONY: install dev dev-web check test test-integration lint \
 	build build-macos build-macos-arm build-windows build-windows-x64 build-linux build-linux-x64 build-linux-arm build-all \
 	bundle-drivers \
-	clean clean-rust rebuild \
+	clean clean-dist clean-rust rebuild \
 	db-up db-down db-status \
 	help

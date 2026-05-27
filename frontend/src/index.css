@@ -137,14 +137,3 @@
     }
   }
 }
-
-@layer utilities {
-  /* 极淡的网格背景，作为 wizard 主画布的纹理 */
-  .bg-grid-pattern {
-    background-image:
-      linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
-    background-size: 56px 56px;
-    background-position: -1px -1px;
-  }
-}

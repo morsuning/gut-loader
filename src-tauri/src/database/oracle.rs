@@ -223,11 +223,8 @@ impl DatabaseLoader for OracleLoader {
                     );
                     continue;
                 }
-                let bind_values: Vec<Value> = row
-                    .values
-                    .iter()
-                    .map(|s| Value::from(s.clone()))
-                    .collect();
+                let bind_values: Vec<Value> =
+                    row.values.iter().map(|s| Value::from(s.clone())).collect();
                 builder = builder.add_row(bind_values);
                 chunk_count += 1;
             }
@@ -261,11 +258,7 @@ impl DatabaseLoader for OracleLoader {
             .query(&sql, &[])
             .await
             .map_err(|e| anyhow!("查询表 {} 行数失败: {}", table_name, e))?;
-        let count = result
-            .rows
-            .first()
-            .and_then(|r| r.get_i64(0))
-            .unwrap_or(0);
+        let count = result.rows.first().and_then(|r| r.get_i64(0)).unwrap_or(0);
         Ok(count.max(0) as usize)
     }
 

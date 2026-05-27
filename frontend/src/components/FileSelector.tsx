@@ -146,7 +146,7 @@ export function FileSelector() {
         ) : (
           <ScrollArea className="mt-4 h-[340px] rounded-xl border bg-card">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-card/95 backdrop-blur">
+              <thead className="sticky top-0 z-10 bg-card">
                 <tr className="border-b text-left text-xs font-mono uppercase tracking-wider text-muted-foreground">
                   <th className="px-4 py-3 font-medium">#</th>
                   <th className="px-4 py-3 font-medium">表名</th>

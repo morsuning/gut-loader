@@ -28,11 +28,11 @@ lerna-debug.log*
 src-tauri/target
 src-tauri/gen
 src-tauri/Cargo.lock
+dist
 
 # Environment variables
 .env
 .env.*.local
-
 docs/archives
 
 # 达梦 ODBC 驱动二进制（由开发者从达梦官网下载放入）

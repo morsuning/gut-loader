@@ -2,6 +2,37 @@
 
 本项目变更记录采用 [语义化版本](https://semver.org/lang/zh-CN/) 进行版本管理。
 
+## [1.8.9] - 2026-05-27
+
+### 修复
+
+- 优化 Windows 无硬件加速虚拟机中的应用打开性能：启动时探测显示适配器，仅在软件/虚拟显示环境中为 WebView2 禁用 GPU 初始化路径，真实 GPU 环境保持硬件加速
+- 降低首屏软件渲染成本：移除全屏网格、顶部渐变与 `backdrop-filter` 模糊效果，改为实体背景与实体卡片
+- 移除未使用的 `react-router-dom` 依赖与根组件路由包装，减少首屏 JavaScript 解析与依赖初始化成本
+
+## [1.8.8] - 2026-05-27
+
+### 修复
+
+- 重新设计并生成应用图标全套资源：新增可维护的透明 SVG 母版，同步导出前端图标、Tauri PNG、Windows ICO、macOS ICNS 与 Windows Store Logo 资源
+- 修复 Windows 桌面快捷方式圆角外出现白色背景的问题：所有 PNG 图标与 ICO 内嵌尺寸均保留透明画布，四角 alpha 为 0
+
+## [1.8.7] - 2026-05-26
+
+### 修复
+
+- 修复 macOS 构建 Linux 目标时 `pkg-config` 找不到 GTK/GLib 系统库的问题：Linux 构建统一采用 GNU libc 目标，macOS 上通过 Docker（`Dockerfile.linux-build`）提供完整 Linux 构建环境（含 GTK3/WebKitGTK 4.1），Linux 上可直接本地构建
+- 新增 `Dockerfile.linux-build`：基于 Ubuntu 24.04，预装 Tauri v2 全部系统依赖、Node.js 20.x、Rust 工具链与 `x86_64-unknown-linux-gnu` / `aarch64-unknown-linux-gnu` 目标
+- 修复 Linux Docker 构建镜像误装 WebKitGTK/JavascriptCore 4.0 导致 `javascriptcore-rs-sys` 找不到 `javascriptcoregtk-4.1.pc` 的问题
+
+## [1.8.6] - 2026-05-26
+
+### 变更
+
+- Makefile 构建目标统一执行 release 构建后将发布产物归集到项目根目录 `dist/`，`build-all` 会先清空 `dist/` 再构建完整声明矩阵
+- Rust release profile 显式开启 `opt-level = 3`、fat LTO、单 codegen unit、符号裁剪与 `panic = "abort"`，确保发布构建启用完整优化
+- README、PRD、实现文档与 BUILD 文档同步更新新的构建依赖、产物目录与清理命令
+
 ## [1.8.5] - 2026-05-26
 
 ### 变更

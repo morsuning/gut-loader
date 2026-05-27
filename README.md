@@ -64,7 +64,7 @@ make build
 make help
 ```
 
-构建产物位于 `src-tauri/target/release/bundle/`，按平台输出 `.app` / `.dmg`（macOS）、`.msi` / `.exe`（Windows）、`.deb` / `.AppImage`（Linux）。
+构建产物统一复制到项目根目录 `dist/`，按平台输出 `.app.tar.gz` / `.dmg`（macOS）、`.msi` / `.exe`（Windows）、`.deb` / `.rpm` / `.AppImage`（Linux）等发布文件。
 
 ## 🧰 构建与开发命令
 
@@ -86,15 +86,15 @@ make help
 
 | 命令 | 说明 |
 |------|------|
-| `make build` | 构建当前平台 Tauri 应用 |
+| `make build` | 构建当前平台 Tauri release 应用，并复制发布产物到 `dist/` |
 | `make build-macos-arm` | 构建 macOS Apple Silicon（aarch64-apple-darwin） |
 | `make build-windows-x64` | 构建 Windows x64 包；macOS 下使用 `x86_64-pc-windows-gnu + mingw-w64 + makensis` 交叉编译 |
-| `make build-linux-x64` | 构建 Linux GNU x64 包；macOS 下通过 Docker 构建 |
-| `make build-linux-arm` | 构建 Linux GNU arm64 包；macOS 下通过 Docker 构建 |
-| `make build-all` | 依次执行全部声明平台构建目标 |
+| `make build-linux-x64` | 构建 Linux GNU x64 包；macOS 下通过 Docker Linux 环境构建 |
+| `make build-linux-arm` | 构建 Linux GNU arm64 包；macOS 下通过 Docker Linux 环境构建 |
+| `make build-all` | 清空 `dist/` 后依次执行全部声明平台构建目标 |
 | `make bundle-drivers` | 显示达梦 ODBC 驱动打包说明 |
 
-> 跨平台目标在 macOS 上会自动选择对应的交叉编译路径：Windows x64 使用 GNU 工具链，Linux x64 / arm64 使用 Docker；如本机未安装对应依赖，请先按 [docs/BUILD.md](docs/BUILD.md) 补齐。
+> 跨平台目标在 macOS 上会自动选择对应构建路径：Windows x64 使用 GNU 工具链，Linux x64 / arm64 使用 Docker Linux 构建环境；如本机未安装对应依赖，请先按 [docs/BUILD.md](docs/BUILD.md) 补齐。
 
 ### 🐳 测试数据库管理
 
@@ -110,7 +110,8 @@ make help
 
 | 命令 | 说明 |
 |------|------|
-| `make clean` | 清理 `frontend/node_modules`、`frontend/dist`、`src-tauri/target` |
+| `make clean` | 清理 `frontend/node_modules`、`frontend/dist`、`src-tauri/target`、`dist` |
+| `make clean-dist` | 仅清理并重建 `dist` |
 | `make clean-rust` | 仅清理 Rust 构建缓存（`cargo clean`） |
 | `make rebuild` | 等价于 `make clean && make install`，全量重新初始化 |
 
@@ -156,9 +157,9 @@ make db-down
 ```bash
 make build-macos-arm      # macOS ARM64
 make build-windows-x64    # Windows x64（macOS 下使用交叉编译）
-make build-linux-x64      # Linux x64（macOS 下通过 Docker 构建）
-make build-linux-arm      # Linux arm64（macOS 下通过 Docker 构建）
-make build-all            # 声明矩阵构建
+make build-linux-x64      # Linux GNU x64（macOS 下使用 Docker）
+make build-linux-arm      # Linux GNU arm64（macOS 下使用 Docker）
+make build-all            # 声明矩阵构建，产物统一输出到 dist/
 ```
 
 **遇到奇怪的构建问题，重置环境：**
@@ -201,6 +202,7 @@ make rebuild        # 清理所有缓存并重新安装依赖
 
 - 窗口配置：`src-tauri/tauri.conf.json`
 - 权限模型：`src-tauri/capabilities/default.json`（已声明 dialog / shell / fs / 核心窗口能力）
+- Windows 启动时会探测显示适配器，仅在软件/虚拟显示环境中为 WebView2 禁用 GPU 路径；真实 GPU 环境保持默认硬件加速
 
 ### 达梦 DM 驱动打包
 
@@ -303,7 +305,7 @@ gut-loader/
 ## ❓ FAQ
 
 **Q：`cargo check` 提示缺少图标？**
-当前仓库已生成最小占位图标（`src-tauri/icons/`），如需替换为正式图标，覆盖同名文件即可。
+当前仓库已包含正式应用图标资源（`src-tauri/icons/`）与前端页眉图标（`frontend/public/app-icon.png`）。如需再次替换，请从透明 SVG 母版重新导出全套同名资源。
 
 **Q：是否需要单独安装 Tauri CLI？**
 不需要。`@tauri-apps/cli` 已作为 `frontend/package.json` 的 devDependency 提供，Makefile 通过 `./frontend/node_modules/.bin/tauri` 调用。
@@ -327,7 +329,7 @@ gut-loader/
 该问题已在 v0.7.1 修复：批量插入占位符上会附加 `::TEXT` / `::NUMERIC` / `::BIGINT` 显式类型转换后缀，并将数值列空字符串绑定为 `NULL`。
 
 **Q：构建产物在哪里？**
-`make build` 完成后，构建产物位于 `src-tauri/target/release/bundle/` 下，按平台输出对应安装包。
+`make build` 或 `make build-all` 完成后，发布产物统一位于项目根目录 `dist/`。`src-tauri/target/` 仅作为 Cargo 与 Tauri 的原始构建目录保留。
 
 ## 📜 许可证
 

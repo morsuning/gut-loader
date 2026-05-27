@@ -137,12 +137,7 @@ impl DmLoader {
         let escaped_pwd = config.password.replace('}', "}}");
         let connection_string = format!(
             "Driver={{{}}};Server={};TCP_PORT={};DATABASE={};UID={};PWD={{{}}}",
-            driver_spec,
-            config.host,
-            config.port,
-            config.database,
-            config.username,
-            escaped_pwd
+            driver_spec, config.host, config.port, config.database, config.username, escaped_pwd
         );
 
         info!(
@@ -156,8 +151,8 @@ impl DmLoader {
         let port = config.port;
         let database = config.database.clone();
         tokio::task::spawn_blocking(move || -> Result<()> {
-            let env = Environment::new()
-                .map_err(|e| anyhow::anyhow!("创建 ODBC 环境失败: {}", e))?;
+            let env =
+                Environment::new().map_err(|e| anyhow::anyhow!("创建 ODBC 环境失败: {}", e))?;
             let conn = env
                 .connect_with_connection_string(&conn_str, ConnectionOptions::default())
                 .map_err(|e| anyhow::anyhow!("连接达梦数据库失败: {}", e))?;
@@ -169,7 +164,10 @@ impl DmLoader {
         .with_context(|| "spawn_blocking 执行失败")?
         .with_context(|| format!("连接达梦数据库失败: {}:{}/{}", host, port, database))?;
 
-        info!("达梦 DM 连接成功: {}:{}/{}", config.host, config.port, config.database);
+        info!(
+            "达梦 DM 连接成功: {}:{}/{}",
+            config.host, config.port, config.database
+        );
         Ok(Self { connection_string })
     }
 
@@ -183,8 +181,8 @@ impl DmLoader {
     {
         let conn_str = self.connection_string.clone();
         tokio::task::spawn_blocking(move || -> Result<T> {
-            let env = Environment::new()
-                .map_err(|e| anyhow::anyhow!("创建 ODBC 环境失败: {}", e))?;
+            let env =
+                Environment::new().map_err(|e| anyhow::anyhow!("创建 ODBC 环境失败: {}", e))?;
             let conn = env
                 .connect_with_connection_string(&conn_str, ConnectionOptions::default())
                 .map_err(|e| anyhow::anyhow!("连接达梦数据库失败: {}", e))?;
@@ -361,10 +359,7 @@ impl DatabaseLoader for DmLoader {
             {
                 row.get_text(1, &mut buf)
                     .map_err(|e| anyhow::anyhow!("获取计数值失败: {}", e))?;
-                let count: usize = String::from_utf8_lossy(&buf)
-                    .trim()
-                    .parse()
-                    .unwrap_or(0);
+                let count: usize = String::from_utf8_lossy(&buf).trim().parse().unwrap_or(0);
                 Ok(count)
             } else {
                 Ok(0)

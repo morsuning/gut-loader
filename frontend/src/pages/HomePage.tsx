@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { lazy, Suspense, useCallback, useMemo } from "react";
 import appPackage from "../../package.json";
 import {
   ArrowLeft,
@@ -23,7 +23,10 @@ import { FileSelector } from "@/components/FileSelector";
 import { DatabaseConfig } from "@/components/DatabaseConfig";
 import { PreCheckPanel } from "@/components/PreCheckPanel";
 import { LoadingProgress } from "@/components/LoadingProgress";
-import { ReportView } from "@/components/ReportView";
+
+const ReportView = lazy(() =>
+  import("@/components/ReportView").then((m) => ({ default: m.ReportView })),
+);
 
 interface StepDef {
   index: number;
@@ -143,16 +146,6 @@ export function HomePage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* 背景纹理：极淡的网格 + 顶部光晕 */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-grid-pattern opacity-[0.18]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-32 -z-10 h-[420px] bg-gradient-to-b from-amber-200/30 via-transparent to-transparent dark:from-amber-500/10"
-      />
-
       <Header onReset={reset} />
 
       <main className="mx-auto w-full max-w-6xl px-6 pb-24 pt-10">
@@ -160,8 +153,10 @@ export function HomePage() {
 
         <Separator className="my-8" />
 
-        <div className="rounded-2xl border bg-card/60 p-6 shadow-sm backdrop-blur md:p-10">
-          {active.render()}
+        <div className="rounded-2xl border bg-card p-6 shadow-sm md:p-10">
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-sm text-muted-foreground">加载中...</div>}>
+            {active.render()}
+          </Suspense>
         </div>
 
         {/* 底部导航 */}
@@ -204,7 +199,7 @@ export function HomePage() {
 
 function Header({ onReset }: { onReset: () => void }) {
   return (
-    <header className="sticky top-0 z-20 border-b bg-background/85 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b bg-background">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
         <div className="flex items-center gap-3">
           <img
@@ -262,7 +257,7 @@ function Stepper({
               type="button"
               onClick={() => onJump(s.index)}
               className={cn(
-                "group flex w-full items-start gap-3 rounded-xl border bg-card/60 px-3 py-3 text-left transition-all md:px-4 md:py-4",
+                "group flex w-full items-start gap-3 rounded-xl border bg-card px-3 py-3 text-left transition-colors md:px-4 md:py-4",
                 state === "active" &&
                   "border-foreground/80 bg-card shadow-sm ring-1 ring-foreground/10",
                 state === "done" && "border-emerald-500/40 bg-emerald-500/5",

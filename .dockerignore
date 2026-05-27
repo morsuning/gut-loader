@@ -1,0 +1,9 @@
+frontend/node_modules
+frontend/dist
+frontend/dist-ssr
+src-tauri/target
+dist
+.git
+.omc
+.DS_Store
+*.log

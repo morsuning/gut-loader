@@ -1,7 +1,7 @@
 {
     "name": "gut-loader",
     "private": true,
-    "version": "1.8.4",
+    "version": "1.8.9",
     "type": "module",
     "scripts": {
         "dev": "vite",
@@ -20,7 +20,6 @@
         "lucide-react": "^0.469.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "react-router-dom": "^7.1.1",
         "recharts": "^2.15.0",
         "sonner": "^1.7.1",
         "tailwind-merge": "^2.6.0",
