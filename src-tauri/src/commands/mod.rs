@@ -76,16 +76,21 @@ pub async fn run_pre_checks(
 // 数据库连接
 // ---------------------------------------------------------------------------
 
-/// 测试数据库连通性。
+/// 测试数据库连通性。成功返回 true，失败返回详细错误信息。
 #[tauri::command]
 pub async fn test_connection(config: DatabaseConfig) -> Result<bool, String> {
-    match database::create_loader(&config).await {
-        Ok(loader) => {
-            let ok = loader.test_connection().await.unwrap_or(false);
+    let loader = database::create_loader(&config)
+        .await
+        .map_err(|e| format!("创建数据库连接失败: {}", e))?;
+    match loader.test_connection().await {
+        Ok(ok) => {
             let _ = loader.close().await;
             Ok(ok)
         }
-        Err(e) => Err(format!("数据库连接失败: {}", e)),
+        Err(e) => {
+            let _ = loader.close().await;
+            Err(format!("连接测试失败: {}", e))
+        }
     }
 }
 
@@ -245,6 +250,25 @@ pub async fn stop_loading(state: State<'_, AppState>) -> Result<(), String> {
     let mut cancel = state.cancel_flag.lock().await;
     *cancel = true;
     Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// 调试日志
+// ---------------------------------------------------------------------------
+
+/// 获取应用运行日志，供前端调试面板展示。
+#[tauri::command]
+pub fn get_app_logs() -> Vec<String> {
+    crate::log_buffer::get_all_logs()
+        .iter()
+        .map(|e| format!("[{}] [{}] {}: {}", e.timestamp, e.level, e.target, e.message))
+        .collect()
+}
+
+/// 清空调试日志缓冲区。
+#[tauri::command]
+pub fn clear_app_logs() {
+    crate::log_buffer::clear_logs();
 }
 
 // ---------------------------------------------------------------------------

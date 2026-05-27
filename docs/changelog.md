@@ -2,6 +2,26 @@
 
 本项目变更记录采用 [语义化版本](https://semver.org/lang/zh-CN/) 进行版本管理。
 
+## [1.9.0] - 2026-05-27
+
+### 新增
+
+- 数据库连接错误详细信息展示：`test_connection` 命令不再吞掉错误详情，前端 toast 直接展示后端返回的具体失败原因（如网络超时、认证失败、驱动缺失等），替代原来固定的"请检查主机、端口、账号密码与网络访问"提示
+- 应用调试日志面板：在目标库配置页面底部新增可折叠的调试日志区域（Bug 图标），展示连接测试错误详情和应用运行日志，支持刷新和清空操作
+- 后端日志系统初始化：启用 `tracing-subscriber` 全局日志系统，同时输出到 stderr 和内存环形缓冲区（最多 2000 条），前端通过 `get_app_logs` / `clear_app_logs` 命令查询
+- 新增 `log_buffer` 模块：实现自定义 tracing Layer，捕获 INFO 及以上级别的日志以及数据库模块的 DEBUG 日志，使用环形缓冲区避免内存溢出
+
+### 变更
+
+- `test_connection` Tauri 命令返回类型从 `Result<bool, String>` 的语义调整：成功时返回 `Ok(true)`，连接测试失败时返回 `Err(详细错误信息)` 而非 `Ok(false)`
+- 前端 `testConnection` 返回类型从 `Promise<boolean>` 改为 `Promise<ConnectionTestResult>`（包含 `ok` 和可选 `error` 字段）
+
+## [1.8.11] - 2026-05-27
+
+### 修复
+
+- 修复 Windows 下前置检查阶段磁盘空间检查失败的问题：将 `get_available_space` 函数改为条件编译，macOS / Linux 保持 `df -k` 命令，Windows 使用 `GetDiskFreeSpaceExW` API 直接获取可用空间
+
 ## [1.8.10] - 2026-05-27
 
 ### 修复

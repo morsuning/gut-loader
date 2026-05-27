@@ -145,22 +145,24 @@ export function HomePage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative flex h-screen flex-col overflow-hidden">
       <Header onReset={reset} />
 
-      <main className="mx-auto w-full max-w-6xl px-6 pb-24 pt-10">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-hidden px-6 pt-6">
         <Stepper current={currentStep} onJump={(i) => setStep(i)} isStepCompleted={isStepCompleted} />
 
-        <Separator className="my-8" />
+        <Separator className="my-4" />
 
-        <div className="rounded-2xl border bg-card p-6 shadow-sm md:p-10">
-          <Suspense fallback={<div className="flex items-center justify-center py-20 text-sm text-muted-foreground">加载中...</div>}>
-            {active.render()}
-          </Suspense>
+        <div className="flex-1 overflow-hidden rounded-2xl border bg-card p-6 shadow-sm md:p-8">
+          <div className="h-full overflow-y-auto">
+            <Suspense fallback={<div className="flex items-center justify-center py-20 text-sm text-muted-foreground">加载中...</div>}>
+              {active.render()}
+            </Suspense>
+          </div>
         </div>
 
         {/* 底部导航 */}
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 py-4">
           <Button
             variant="ghost"
             onClick={goPrev}
@@ -199,37 +201,100 @@ export function HomePage() {
 
 function Header({ onReset }: { onReset: () => void }) {
   return (
-    <header className="sticky top-0 z-20 border-b bg-background">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
-        <div className="flex items-center gap-3">
+    <header
+      data-tauri-drag-region
+      className="sticky top-0 z-20 select-none border-b bg-background"
+    >
+      <div
+        data-tauri-drag-region
+        className="mx-auto flex h-10 w-full max-w-6xl items-center justify-between px-6"
+      >
+        <div data-tauri-drag-region className="flex items-center gap-2.5">
           <img
             src="/app-icon.png"
             alt=""
-            className="h-8 w-8 rounded-md shadow-sm"
+            data-tauri-drag-region
+            className="pointer-events-none h-7 w-7 rounded-md shadow-sm"
           />
-          <div className="leading-tight">
-            <p className="text-sm font-semibold tracking-tight">
+          <div data-tauri-drag-region className="leading-tight">
+            <p data-tauri-drag-region className="text-sm font-semibold tracking-tight">
               GUT&nbsp;Loader
             </p>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            <p data-tauri-drag-region className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
               Universal data ingestion · {APP_VERSION}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Button
             size="sm"
             variant="ghost"
             onClick={onReset}
-            className="gap-1.5 text-muted-foreground hover:text-foreground"
+            className="h-7 gap-1.5 text-muted-foreground hover:text-foreground"
           >
-            <RefreshCcw className="h-3.5 w-3.5" />
-            重置流程
+            <RefreshCcw className="h-3 w-3" />
+            重置
           </Button>
+          <WindowControls />
         </div>
       </div>
     </header>
+  );
+}
+
+/** 窗口控制按钮（最小化/最大化/关闭）- 仅 Windows/Linux 显示 */
+function WindowControls() {
+  // macOS 使用原生红绿灯按钮，不需要自定义控制
+  const isMac = navigator.platform.includes("Mac") || navigator.userAgent.includes("Mac");
+  if (isMac) return null;
+
+  const handleMinimize = async () => {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    getCurrentWindow().minimize();
+  };
+  const handleToggleMaximize = async () => {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    getCurrentWindow().toggleMaximize();
+  };
+  const handleClose = async () => {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    getCurrentWindow().close();
+  };
+
+  return (
+    <div className="flex items-center">
+      <button
+        type="button"
+        onClick={handleMinimize}
+        className="grid h-7 w-8 place-items-center text-muted-foreground transition-colors hover:bg-muted"
+        title="最小化"
+      >
+        <svg width="10" height="1" viewBox="0 0 10 1" fill="currentColor">
+          <rect width="10" height="1" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        onClick={handleToggleMaximize}
+        className="grid h-7 w-8 place-items-center text-muted-foreground transition-colors hover:bg-muted"
+        title="最大化"
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1">
+          <rect x="0.5" y="0.5" width="9" height="9" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        onClick={handleClose}
+        className="grid h-7 w-8 place-items-center text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
+        title="关闭"
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <path d="M1 1L9 9M9 1L1 9" />
+        </svg>
+      </button>
+    </div>
   );
 }
 
@@ -243,7 +308,7 @@ function Stepper({
   isStepCompleted: (index: number) => boolean;
 }) {
   return (
-    <ol className="grid grid-cols-5 gap-2 md:gap-3">
+    <ol className="grid grid-cols-5 gap-1.5 md:gap-2">
       {STEPS.map((s) => {
         const state = isStepCompleted(s.index)
           ? "done"
@@ -257,7 +322,7 @@ function Stepper({
               type="button"
               onClick={() => onJump(s.index)}
               className={cn(
-                "group flex w-full items-start gap-3 rounded-xl border bg-card px-3 py-3 text-left transition-colors md:px-4 md:py-4",
+                "group flex w-full items-start gap-2.5 rounded-xl border bg-card px-3 py-2.5 text-left transition-colors md:px-4 md:py-3",
                 state === "active" &&
                   "border-foreground/80 bg-card shadow-sm ring-1 ring-foreground/10",
                 state === "done" && "border-emerald-500/40 bg-emerald-500/5",

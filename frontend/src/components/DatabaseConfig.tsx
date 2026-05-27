@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Bug,
   ChevronDown,
   ChevronUp,
   Loader2,
@@ -54,7 +55,7 @@ export function DatabaseConfig() {
   const saveDbConfig = useAppStore((s) => s.saveDbConfig);
   const deleteSavedDbConfig = useAppStore((s) => s.deleteSavedDbConfig);
   const loadSavedDbConfig = useAppStore((s) => s.loadSavedDbConfig);
-  const { testConnection, parseDbInfo } = useTauriCommands();
+  const { testConnection, parseDbInfo, getAppLogs, clearAppLogs } = useTauriCommands();
 
   const [testing, setTesting] = useState(false);
   const [parsing, setParsing] = useState(false);
@@ -62,23 +63,39 @@ export function DatabaseConfig() {
   const [aiText, setAiText] = useState("");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [configName, setConfigName] = useState("");
+  const [showDebug, setShowDebug] = useState(false);
+  const [appLogs, setAppLogs] = useState<string[]>([]);
+  const [lastError, setLastError] = useState<string>("");
 
   const onTypeChange = (val: string) => {
     const next = val as DbType;
     setDbConfig({ db_type: next, port: DB_TYPE_DEFAULT_PORT[next] });
   };
 
+  const loadLogs = async () => {
+    const logs = await getAppLogs();
+    setAppLogs(logs);
+  };
+
+  const handleClearLogs = async () => {
+    await clearAppLogs();
+    setAppLogs([]);
+  };
+
   const handleTest = async () => {
     setTesting(true);
+    setLastError("");
     try {
-      const ok = await testConnection(dbConfig);
-      if (ok) {
+      const result = await testConnection(dbConfig);
+      if (result.ok) {
         toast.success("数据库连接成功", {
           description: `${DB_TYPE_LABEL[dbConfig.db_type]} @ ${dbConfig.host}:${dbConfig.port}`,
         });
       } else {
+        const errMsg = result.error || "未知错误";
+        setLastError(errMsg);
         toast.error("数据库连接失败", {
-          description: "请检查主机、端口、账号密码与网络访问",
+          description: errMsg,
         });
       }
     } finally {
@@ -136,23 +153,23 @@ export function DatabaseConfig() {
   };
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="space-y-4">
+      <header className="space-y-1">
         <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
           STEP / 02 — Sink configuration
         </p>
-        <h2 className="text-2xl font-semibold tracking-tight">
+        <h2 className="text-xl font-semibold tracking-tight">
           配置目标数据库
         </h2>
-        <p className="text-sm text-muted-foreground max-w-2xl">
+        <p className="text-xs text-muted-foreground max-w-2xl">
           所有连接凭据仅保存在本机内存中，不会持久化或上传。可使用 LLM
           直接从一段文本中识别填充字段。
         </p>
       </header>
 
       {/* 主连接表单 */}
-      <div className="rounded-xl border bg-card p-6">
-        <div className="mb-5 flex items-center justify-between">
+      <div className="rounded-xl border bg-card p-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <PlugZap className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-semibold tracking-wide">连接参数</h3>
@@ -210,8 +227,8 @@ export function DatabaseConfig() {
           </div>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-12">
-          <div className="space-y-1.5 md:col-span-4">
+        <div className="grid gap-4 md:grid-cols-12">
+          <div className="space-y-1 md:col-span-4">
             <Label>数据库类型</Label>
             <Select value={dbConfig.db_type} onValueChange={onTypeChange}>
               <SelectTrigger>
@@ -232,7 +249,7 @@ export function DatabaseConfig() {
             )}
           </div>
 
-          <div className="space-y-1.5 md:col-span-5">
+          <div className="space-y-1 md:col-span-5">
             <Label htmlFor="host">主机</Label>
             <Input
               id="host"
@@ -243,7 +260,7 @@ export function DatabaseConfig() {
             />
           </div>
 
-          <div className="space-y-1.5 md:col-span-3">
+          <div className="space-y-1 md:col-span-3">
             <Label htmlFor="port">端口</Label>
             <Input
               id="port"
@@ -256,7 +273,7 @@ export function DatabaseConfig() {
             />
           </div>
 
-          <div className="space-y-1.5 md:col-span-6">
+          <div className="space-y-1 md:col-span-6">
             <Label htmlFor="db">数据库 / 实例</Label>
             <Input
               id="db"
@@ -267,7 +284,7 @@ export function DatabaseConfig() {
             />
           </div>
 
-          <div className="space-y-1.5 md:col-span-6">
+          <div className="space-y-1 md:col-span-6">
             <Label htmlFor="schema">
               Schema <span className="text-muted-foreground">（可选）</span>
             </Label>
@@ -280,7 +297,7 @@ export function DatabaseConfig() {
             />
           </div>
 
-          <div className="space-y-1.5 md:col-span-6">
+          <div className="space-y-1 md:col-span-6">
             <Label htmlFor="user">用户名</Label>
             <Input
               id="user"
@@ -291,7 +308,7 @@ export function DatabaseConfig() {
             />
           </div>
 
-          <div className="space-y-1.5 md:col-span-6">
+          <div className="space-y-1 md:col-span-6">
             <Label htmlFor="pwd">密码</Label>
             <Input
               id="pwd"
@@ -314,7 +331,7 @@ export function DatabaseConfig() {
               为当前连接参数命名以便日后快速加载。密码不会被保存。
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 py-2">
+          <div className="space-y-1.5 py-1">
             <Label htmlFor="config-name">配置名称</Label>
             <Input
               id="config-name"
@@ -337,7 +354,7 @@ export function DatabaseConfig() {
 
       {/* LLM 智能填充 */}
       <div className="overflow-hidden rounded-xl border bg-card">
-        <div className="flex w-full items-center justify-between gap-3 px-6 py-4">
+        <div className="flex w-full items-center justify-between gap-3 px-4 py-3">
           <button
             type="button"
             onClick={() => setShowAi((s) => !s)}
@@ -377,7 +394,7 @@ export function DatabaseConfig() {
                     配置大语言模型 API 端点，用于智能识别数据库连接信息
                   </DialogDescription>
                 </DialogHeader>
-                <div className="py-2">
+                <div className="py-1">
                   <LLMConfig />
                 </div>
               </DialogContent>
@@ -398,14 +415,14 @@ export function DatabaseConfig() {
         </div>
 
         {showAi && (
-          <div className="space-y-5 border-t px-6 py-5">
-            <div className="space-y-2">
+          <div className="space-y-4 border-t px-4 py-4">
+            <div className="space-y-1.5">
               <Label htmlFor="ai-text">连接信息文本</Label>
               <textarea
                 id="ai-text"
                 value={aiText}
                 onChange={(e) => setAiText(e.target.value)}
-                rows={6}
+                rows={5}
                 className="block w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 placeholder={`例：\n生产库连接信息：\n  类型 PostgreSQL，地址 10.20.30.40:5432\n  数据库 ods，用户 loader，密码 P@ssw0rd\n  schema 为 raw`}
               />
@@ -435,6 +452,116 @@ export function DatabaseConfig() {
                 )}
                 智能识别
               </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 调试日志面板 */}
+      <div className="overflow-hidden rounded-xl border bg-card">
+        <div className="flex w-full items-center justify-between gap-3 px-4 py-2">
+          <button
+            type="button"
+            onClick={() => {
+              setShowDebug((s) => !s);
+              if (!showDebug) loadLogs();
+            }}
+            className="flex flex-1 items-center gap-2 text-left transition-colors"
+          >
+            <Bug className="h-3.5 w-3.5 text-muted-foreground/60" />
+            <span className="text-xs text-muted-foreground/60">
+              调试日志
+            </span>
+            {lastError && !showDebug && (
+              <span className="inline-flex items-center rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] text-destructive">
+                有错误
+              </span>
+            )}
+          </button>
+          <div className="flex items-center gap-1">
+            {showDebug && (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={loadLogs}
+                  className="h-6 px-2 text-xs text-muted-foreground"
+                >
+                  刷新
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleClearLogs}
+                  className="h-6 px-2 text-xs text-muted-foreground"
+                >
+                  清空
+                </Button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setShowDebug((s) => !s);
+                if (!showDebug) loadLogs();
+              }}
+              className="grid h-6 w-6 place-items-center rounded-md text-muted-foreground/60 transition-colors hover:bg-muted/40"
+              aria-label={showDebug ? "折叠" : "展开"}
+            >
+              {showDebug ? (
+                <ChevronUp className="h-3 w-3" />
+              ) : (
+                <ChevronDown className="h-3 w-3" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {showDebug && (
+          <div className="border-t px-4 py-3 space-y-3">
+            {/* 最近一次连接错误 */}
+            {lastError && (
+              <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2">
+                <p className="text-xs font-medium text-destructive mb-1">
+                  最近连接错误
+                </p>
+                <pre className="whitespace-pre-wrap break-all text-xs text-destructive/80 font-mono">
+                  {lastError}
+                </pre>
+              </div>
+            )}
+
+            {/* 应用日志 */}
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1.5">
+                应用运行日志（最近 {appLogs.length} 条）
+              </p>
+              <div className="max-h-64 overflow-auto rounded-md border bg-zinc-950 p-2">
+                {appLogs.length === 0 ? (
+                  <p className="text-xs text-zinc-500 font-mono">
+                    暂无日志记录
+                  </p>
+                ) : (
+                  appLogs.map((line, i) => {
+                    const isError = line.includes("ERROR");
+                    const isWarn = line.includes("WARN");
+                    return (
+                      <div
+                        key={i}
+                        className={`font-mono text-[11px] leading-relaxed break-all ${
+                          isError
+                            ? "text-red-400"
+                            : isWarn
+                              ? "text-yellow-400"
+                              : "text-zinc-400"
+                        }`}
+                      >
+                        {line}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -75,24 +75,24 @@ export function PreCheckPanel() {
   }, []);
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="space-y-4">
+      <header className="space-y-1">
         <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
           STEP / 03 — Pre-flight checks
         </p>
-        <h2 className="text-2xl font-semibold tracking-tight">入库前置校验</h2>
-        <p className="text-sm text-muted-foreground max-w-2xl">
+        <h2 className="text-xl font-semibold tracking-tight">入库前置校验</h2>
+        <p className="text-xs text-muted-foreground max-w-2xl">
           检查磁盘空间、文件完整性、表结构一致性、目标库连通性等。出现红色错误项时，
           流程将被阻塞，必须修复后才能进入加载阶段。
         </p>
       </header>
 
-      <div className="rounded-xl border bg-card p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="rounded-xl border bg-card p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                "grid h-11 w-11 place-items-center rounded-lg",
+                "grid h-10 w-10 place-items-center rounded-lg",
                 blocking
                   ? "bg-destructive/10 text-destructive"
                   : allGreen
@@ -142,19 +142,19 @@ export function PreCheckPanel() {
         </div>
 
         {running && summary.total === 0 ? (
-          <div className="mt-4 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-16">
-            <Loader2 className="mb-3 h-7 w-7 animate-spin text-muted-foreground" />
+          <div className="mt-2 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-12">
+            <Loader2 className="mb-2 h-6 w-6 animate-spin text-muted-foreground" />
             <p className="text-sm text-muted-foreground">正在执行预检…</p>
           </div>
         ) : preCheckResults.length === 0 ? (
-          <div className="mt-4 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-16 text-center">
-            <ShieldCheck className="mb-3 h-7 w-7 text-muted-foreground/60" />
+          <div className="mt-2 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-12 text-center">
+            <ShieldCheck className="mb-2 h-6 w-6 text-muted-foreground/60" />
             <p className="text-sm text-muted-foreground">
               点击「重新检查」以执行前置校验
             </p>
           </div>
         ) : (
-          <ul className="mt-4 space-y-2">
+          <ul className="mt-2 space-y-1.5">
             {preCheckResults.map((r, idx) => (
               <CheckItem key={`${r.check_name}-${idx}`} result={r} index={idx} />
             ))}

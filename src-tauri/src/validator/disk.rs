@@ -137,7 +137,10 @@ fn calculate_data_size(directory: &Path) -> anyhow::Result<u64> {
     Ok(total)
 }
 
-/// 通过 `df -k` 命令获取指定路径所在磁盘的可用空间（字节）。
+/// 获取指定路径所在磁盘的可用空间（字节）。
+///
+/// - Unix/macOS: 通过 `df -k` 命令
+/// - Windows: 通过 `GetDiskFreeSpaceExW` API
 fn get_available_space(path: &Path) -> anyhow::Result<u64> {
     // 确保路径存在，如果不存在则使用父目录
     let check_path = if path.exists() {
@@ -146,9 +149,23 @@ fn get_available_space(path: &Path) -> anyhow::Result<u64> {
         path.parent().unwrap_or(Path::new("/")).to_path_buf()
     };
 
+    #[cfg(target_os = "windows")]
+    {
+        get_available_space_windows(&check_path)
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        get_available_space_unix(&check_path)
+    }
+}
+
+/// Unix/macOS: 通过 `df -k` 命令获取可用空间。
+#[cfg(not(target_os = "windows"))]
+fn get_available_space_unix(path: &Path) -> anyhow::Result<u64> {
     let output = Command::new("df")
         .arg("-k")
-        .arg(&check_path)
+        .arg(path)
         .output()
         .map_err(|e| anyhow::anyhow!("执行 df 命令失败: {}", e))?;
 
@@ -160,15 +177,11 @@ fn get_available_space(path: &Path) -> anyhow::Result<u64> {
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    // df -k 输出格式：
-    // Filesystem   1024-blocks   Used   Available   Capacity   Mounted on
-    // /dev/disk1   xxx           xxx    xxx         xx%        /
     let lines: Vec<&str> = stdout.lines().collect();
     if lines.len() < 2 {
         return Err(anyhow::anyhow!("df 输出格式异常: {}", stdout));
     }
 
-    // 解析第二行（数据行），字段以空格分隔
     let data_line = lines[1];
     let fields: Vec<&str> = data_line.split_whitespace().collect();
     // macOS 的 df -k 输出有 9 列，Available 在第 4 列（索引 3）
@@ -182,6 +195,36 @@ fn get_available_space(path: &Path) -> anyhow::Result<u64> {
         .map_err(|e| anyhow::anyhow!("解析可用空间失败 '{}': {}", fields[3], e))?;
 
     Ok(available_kb * 1024) // 转换为字节
+}
+
+/// Windows: 通过 `GetDiskFreeSpaceExW` API 获取可用空间。
+#[cfg(target_os = "windows")]
+fn get_available_space_windows(path: &Path) -> anyhow::Result<u64> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Storage::FileSystem::GetDiskFreeSpaceExW;
+
+    // 转换为 null 结尾的宽字符串
+    let wide_path: Vec<u16> = path.as_os_str().encode_wide().chain(std::iter::once(0)).collect();
+
+    let mut free_bytes_available: u64 = 0;
+
+    let result = unsafe {
+        GetDiskFreeSpaceExW(
+            wide_path.as_ptr(),
+            &mut free_bytes_available as *mut u64,
+            std::ptr::null_mut(),
+            std::ptr::null_mut(),
+        )
+    };
+
+    if result == 0 {
+        return Err(anyhow::anyhow!(
+            "GetDiskFreeSpaceExW 调用失败，路径: {}",
+            path.display()
+        ));
+    }
+
+    Ok(free_bytes_available)
 }
 
 /// 将字节大小格式化为人类可读格式。

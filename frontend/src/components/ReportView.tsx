@@ -35,14 +35,14 @@ export function ReportView() {
 
   if (!report) {
     return (
-      <div className="space-y-8">
-        <header className="space-y-2">
+      <div className="space-y-4">
+        <header className="space-y-1">
           <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
             STEP / 05 — Load report
           </p>
-          <h2 className="text-2xl font-semibold tracking-tight">入库报告</h2>
+          <h2 className="text-xl font-semibold tracking-tight">入库报告</h2>
         </header>
-        <div className="grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-20 text-center">
+        <div className="grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-16 text-center">
           <Award className="mb-3 h-8 w-8 text-muted-foreground/60" />
           <p className="text-sm font-medium text-muted-foreground">
             暂无报告数据
@@ -93,14 +93,14 @@ function ReportContent({ report }: { report: LoadReport }) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <header className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-2">
+        <div className="space-y-1">
           <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
             STEP / 05 — Load report
           </p>
-          <h2 className="text-2xl font-semibold tracking-tight">入库报告</h2>
-          <p className="text-sm text-muted-foreground max-w-2xl">
+          <h2 className="text-xl font-semibold tracking-tight">入库报告</h2>
+          <p className="text-xs text-muted-foreground max-w-2xl">
             总耗时 {formatMs(report.total_elapsed_ms)} · 平均速率{" "}
             <span className="font-mono">
               {Math.round(report.avg_speed).toLocaleString()}
@@ -115,7 +115,7 @@ function ReportContent({ report }: { report: LoadReport }) {
       </header>
 
       {/* 汇总四联卡 */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
         <SummaryCard
           icon={Database}
           label="总表数"
@@ -150,9 +150,9 @@ function ReportContent({ report }: { report: LoadReport }) {
       </div>
 
       {/* 总耗时大数 */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-card p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
         <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-lg bg-primary/5 text-primary">
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/5 text-primary">
             <Timer className="h-5 w-5" />
           </div>
           <div>
@@ -191,17 +191,17 @@ function ReportContent({ report }: { report: LoadReport }) {
 
       {/* 详情表格 */}
       <section>
-        <h3 className="mb-3 text-sm font-semibold tracking-wide">每表详情</h3>
+        <h3 className="mb-2 text-sm font-semibold tracking-wide">每表详情</h3>
         <div className="overflow-hidden rounded-xl border bg-card">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40 text-left text-xs font-mono uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-3 font-medium">表名</th>
-                <th className="px-4 py-3 text-right font-medium">行数</th>
-                <th className="px-4 py-3 text-right font-medium">成功</th>
-                <th className="px-4 py-3 text-right font-medium">失败</th>
-                <th className="px-4 py-3 text-right font-medium">速率</th>
-                <th className="px-4 py-3 text-right font-medium">耗时</th>
+                <th className="px-3 py-2 font-medium">表名</th>
+                <th className="px-3 py-2 text-right font-medium">行数</th>
+                <th className="px-3 py-2 text-right font-medium">成功</th>
+                <th className="px-3 py-2 text-right font-medium">失败</th>
+                <th className="px-3 py-2 text-right font-medium">速率</th>
+                <th className="px-3 py-2 text-right font-medium">耗时</th>
               </tr>
             </thead>
             <tbody>
@@ -209,7 +209,7 @@ function ReportContent({ report }: { report: LoadReport }) {
                 const failed = t.failed_count > 0;
                 return (
                   <tr key={t.table_name} className="border-b last:border-0">
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2">
                       <Badge variant="secondary" className="font-mono">
                         {t.table_name}
                       </Badge>
@@ -219,15 +219,15 @@ function ReportContent({ report }: { report: LoadReport }) {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono tabular-nums">
+                    <td className="px-3 py-2 text-right font-mono tabular-nums">
                       {t.row_count.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono tabular-nums text-emerald-600 dark:text-emerald-400">
+                    <td className="px-3 py-2 text-right font-mono tabular-nums text-emerald-600 dark:text-emerald-400">
                       {t.success_count.toLocaleString()}
                     </td>
                     <td
                       className={cn(
-                        "px-4 py-3 text-right font-mono tabular-nums",
+                        "px-3 py-2 text-right font-mono tabular-nums",
                         failed
                           ? "text-destructive"
                           : "text-muted-foreground",
@@ -235,10 +235,10 @@ function ReportContent({ report }: { report: LoadReport }) {
                     >
                       {t.failed_count.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono tabular-nums">
+                    <td className="px-3 py-2 text-right font-mono tabular-nums">
                       {Math.round(t.speed).toLocaleString()} r/s
                     </td>
-                    <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">
+                    <td className="px-3 py-2 text-right font-mono tabular-nums text-muted-foreground">
                       {formatMs(t.elapsed_ms)}
                     </td>
                   </tr>
@@ -250,9 +250,9 @@ function ReportContent({ report }: { report: LoadReport }) {
       </section>
 
       {/* 图表 */}
-      <section className="grid gap-4 lg:grid-cols-5">
-        <div className="rounded-xl border bg-card p-5 lg:col-span-3">
-          <div className="mb-3 flex items-baseline justify-between">
+      <section className="grid gap-3 lg:grid-cols-5">
+        <div className="rounded-xl border bg-card p-4 lg:col-span-3">
+          <div className="mb-2 flex items-baseline justify-between">
             <h3 className="text-sm font-semibold tracking-wide">
               每表加载速率
             </h3>
@@ -260,7 +260,7 @@ function ReportContent({ report }: { report: LoadReport }) {
               rows / second
             </span>
           </div>
-          <div className="h-64">
+          <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={speedData}>
                 <CartesianGrid
@@ -299,8 +299,8 @@ function ReportContent({ report }: { report: LoadReport }) {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-5 lg:col-span-2">
-          <div className="mb-3 flex items-baseline justify-between">
+        <div className="rounded-xl border bg-card p-4 lg:col-span-2">
+          <div className="mb-2 flex items-baseline justify-between">
             <h3 className="text-sm font-semibold tracking-wide">
               成功 / 失败比例
             </h3>
@@ -308,7 +308,7 @@ function ReportContent({ report }: { report: LoadReport }) {
               total {report.total_rows.toLocaleString()}
             </span>
           </div>
-          <div className="h-64">
+          <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -367,7 +367,7 @@ function SummaryCard({
           : "text-foreground";
 
   return (
-    <div className="rounded-xl border bg-card p-5">
+    <div className="rounded-xl border bg-card p-4">
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
           {label}
@@ -376,7 +376,7 @@ function SummaryCard({
       </div>
       <p
         className={cn(
-          "mt-3 font-mono text-3xl font-semibold tabular-nums",
+          "mt-2 font-mono text-2xl font-semibold tabular-nums",
           accentClass,
         )}
       >

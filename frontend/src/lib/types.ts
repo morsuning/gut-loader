@@ -143,3 +143,9 @@ export interface SavedDbConfig extends DatabaseConfig {
   id: string;
   name: string;
 }
+
+/// 数据库连接测试结果
+export interface ConnectionTestResult {
+  ok: boolean;
+  error?: string;
+}

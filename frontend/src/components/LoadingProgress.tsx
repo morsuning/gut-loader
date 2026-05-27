@@ -85,16 +85,16 @@ export function LoadingProgress() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <header className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-2">
+        <div className="space-y-1">
           <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
             STEP / 04 — Load execution
           </p>
-          <h2 className="text-2xl font-semibold tracking-tight">
+          <h2 className="text-xl font-semibold tracking-tight">
             执行批量入库
           </h2>
-          <p className="text-sm text-muted-foreground max-w-2xl">
+          <p className="text-xs text-muted-foreground max-w-2xl">
             实时显示每张表的加载进度、速率与失败计数；点击下方按钮开始或终止任务。
           </p>
         </div>
@@ -118,7 +118,7 @@ export function LoadingProgress() {
       </header>
 
       {/* 概览卡片 */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
         <StatCard
           label="总记录数"
           value={stats.total.toLocaleString()}
@@ -146,7 +146,7 @@ export function LoadingProgress() {
       </div>
 
       {/* 总体进度 */}
-      <div className="rounded-xl border bg-card p-6">
+      <div className="rounded-xl border bg-card p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity
@@ -177,14 +177,14 @@ export function LoadingProgress() {
         </div>
 
         {loadingProgress.length === 0 ? (
-          <div className="mt-4 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-12 text-center">
-            <CircleDashed className="mb-3 h-7 w-7 text-muted-foreground/60" />
+          <div className="mt-2 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-8 text-center">
+            <CircleDashed className="mb-2 h-6 w-6 text-muted-foreground/60" />
             <p className="text-sm text-muted-foreground">
               {isLoading ? "等待后端推送进度…" : "尚未开始加载"}
             </p>
           </div>
         ) : (
-          <ul className="mt-4 space-y-2">
+          <ul className="mt-2 space-y-1.5">
             {loadingProgress.map((p) => (
               <TableRow key={p.table_name} progress={p} />
             ))}
@@ -200,7 +200,7 @@ export function LoadingProgress() {
             tail -f
           </span>
         </div>
-        <div className="mt-3 overflow-hidden rounded-xl border bg-zinc-950 text-zinc-100">
+        <div className="mt-2 overflow-hidden rounded-xl border bg-zinc-950 text-zinc-100">
           <div className="flex items-center gap-1.5 border-b border-zinc-800 px-3 py-2">
             <span className="h-2 w-2 rounded-full bg-red-500/80" />
             <span className="h-2 w-2 rounded-full bg-yellow-500/80" />
@@ -211,7 +211,7 @@ export function LoadingProgress() {
           </div>
           <div
             ref={logScrollRef}
-            className="h-[240px] overflow-y-auto"
+            className="h-[180px] overflow-y-auto"
           >
             <div className="px-4 py-3 font-mono text-xs leading-relaxed">
               {loadingLogs.length === 0 ? (
@@ -252,19 +252,19 @@ function TableRow({ progress }: { progress: LoadProgressItem }) {
   const meta = statusVisual(progress.status);
   const Icon = meta.icon;
   return (
-    <li className="rounded-lg border bg-card px-4 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+    <li className="rounded-lg border bg-card px-3 py-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
           <div
             className={cn(
-              "grid h-8 w-8 place-items-center rounded-md",
+              "grid h-7 w-7 place-items-center rounded-md",
               meta.bg,
               meta.fg,
             )}
           >
             <Icon
               className={cn(
-                "h-4 w-4",
+                "h-3.5 w-3.5",
                 progress.status === "loading" && "animate-spin",
               )}
             />
@@ -285,15 +285,15 @@ function TableRow({ progress }: { progress: LoadProgressItem }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-6 font-mono text-xs">
+        <div className="flex items-center gap-4 font-mono text-xs">
           <Stat label="速率" value={`${Math.round(progress.speed)} r/s`} />
           <Stat label="耗时" value={formatMs(progress.elapsed_ms)} />
-          <span className="w-12 text-right text-base font-semibold tabular-nums">
+          <span className="w-10 text-right text-sm font-semibold tabular-nums">
             {pct}%
           </span>
         </div>
       </div>
-      <Progress value={pct} className="mt-3 h-1.5" />
+      <Progress value={pct} className="mt-2 h-1.5" />
     </li>
   );
 }
@@ -334,7 +334,7 @@ function StatCard({
           : "text-foreground";
 
   return (
-    <div className="relative overflow-hidden rounded-xl border bg-card p-5">
+    <div className="relative overflow-hidden rounded-xl border bg-card p-4">
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
           {label}
@@ -349,7 +349,7 @@ function StatCard({
           </span>
         )}
       </div>
-      <p className={cn("mt-3 font-mono text-3xl font-semibold tabular-nums", accentClass)}>
+      <p className={cn("mt-2 font-mono text-2xl font-semibold tabular-nums", accentClass)}>
         {value}
       </p>
       {unit && (

@@ -58,7 +58,7 @@ export function LLMConfig() {
   };
 
   return (
-    <div className="space-y-5 rounded-lg border bg-muted/20 p-5">
+    <div className="space-y-4 rounded-lg border bg-muted/20 p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-amber-500" />
@@ -74,8 +74,8 @@ export function LLMConfig() {
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-1.5">
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="space-y-1">
           <Label htmlFor="llm-url">API URL</Label>
           <Input
             id="llm-url"
@@ -85,7 +85,7 @@ export function LLMConfig() {
             className="font-mono text-sm"
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <Label htmlFor="llm-model">模型</Label>
           <Input
             id="llm-model"
@@ -97,7 +97,7 @@ export function LLMConfig() {
         </div>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         <Label htmlFor="llm-key">API Key</Label>
         <div className="flex gap-2">
           <div className="relative flex-1">

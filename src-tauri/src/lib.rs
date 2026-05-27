@@ -2,6 +2,7 @@ pub mod commands;
 pub mod database;
 pub mod llm;
 pub mod loader;
+pub mod log_buffer;
 pub mod models;
 pub mod parser;
 pub mod report;
@@ -11,6 +12,7 @@ pub mod validator;
 use tauri::Manager;
 
 use commands::AppState;
+use tracing_subscriber::prelude::*;
 
 const WEBVIEW2_DISABLE_GPU_ARGS: &str =
     "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --disable-gpu";
@@ -19,6 +21,12 @@ const WEBVIEW2_DISABLE_GPU_ARGS: &str =
 pub fn run() {
     let mut context = tauri::generate_context!();
     configure_windows_webview_args(context.config_mut());
+
+    // 初始化 tracing 日志系统：同时输出到 stderr 和内存缓冲区（供调试面板查询）
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer().with_target(true))
+        .with(log_buffer::BufferLayer)
+        .init();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -35,6 +43,8 @@ pub fn run() {
             commands::test_llm_connection,
             commands::get_report,
             commands::save_report,
+            commands::get_app_logs,
+            commands::clear_app_logs,
         ])
         .setup(|app| {
             #[cfg(debug_assertions)]
@@ -42,7 +52,15 @@ pub fn run() {
                 let window = app.get_webview_window("main").unwrap();
                 window.open_devtools();
             }
-            let _ = app;
+
+            // Windows: 无边框窗口恢复原生阴影
+            #[cfg(target_os = "windows")]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    enable_windows_shadow(&window);
+                }
+            }
+
             Ok(())
         })
         .run(context)
@@ -118,6 +136,27 @@ fn windows_display_adapters() -> Option<Vec<DisplayAdapter>> {
 fn wide_array_to_string(chars: &[u16]) -> String {
     let len = chars.iter().position(|&ch| ch == 0).unwrap_or(chars.len());
     String::from_utf16_lossy(&chars[..len])
+}
+
+/// Windows: 通过 DWM API 为无边框窗口启用原生阴影效果
+#[cfg(target_os = "windows")]
+fn enable_windows_shadow(window: &tauri::WebviewWindow) {
+    use windows_sys::Win32::Graphics::Dwm::{DwmExtendFrameIntoClientArea, MARGINS};
+    use tauri::Manager;
+
+    let hwnd = window.hwnd().unwrap().0;
+
+    // 将边框延伸到客户区，值 -1 表示扩展到所有边缘
+    let margins = MARGINS {
+        cxLeftWidth: -1,
+        cxRightWidth: -1,
+        cyTopHeight: -1,
+        cyBottomHeight: -1,
+    };
+
+    unsafe {
+        DwmExtendFrameIntoClientArea(hwnd, &margins);
+    }
 }
 
 #[cfg(target_os = "windows")]

@@ -70,15 +70,15 @@ export function FileSelector() {
   };
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="space-y-4">
+      <header className="space-y-1">
         <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
           STEP / 01 — Source ingestion
         </p>
-        <h2 className="text-2xl font-semibold tracking-tight">
+        <h2 className="text-xl font-semibold tracking-tight">
           指向待入库的 GUT 数据目录
         </h2>
-        <p className="text-sm text-muted-foreground max-w-2xl">
+        <p className="text-xs text-muted-foreground max-w-2xl">
           扫描器会在指定目录中识别配对的{" "}
           <code className="font-mono text-foreground">.flg</code> 元数据与{" "}
           <code className="font-mono text-foreground">.dat.gz</code> 数据文件，
@@ -86,7 +86,7 @@ export function FileSelector() {
         </p>
       </header>
 
-      <div className="rounded-xl border border-dashed border-border bg-card/50 p-6">
+      <div className="rounded-xl border border-dashed border-border bg-card/50 p-4">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-start gap-3">
             <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-primary/5 text-primary">
@@ -144,7 +144,7 @@ export function FileSelector() {
         {filePairs.length === 0 ? (
           <EmptyResult scanned={!!selectedDirectory && !scanning} />
         ) : (
-          <ScrollArea className="mt-4 h-[340px] rounded-xl border bg-card">
+          <ScrollArea className="mt-2 h-[280px] rounded-xl border bg-card">
             <table className="w-full text-sm">
               <thead className="sticky top-0 z-10 bg-card">
                 <tr className="border-b text-left text-xs font-mono uppercase tracking-wider text-muted-foreground">
@@ -210,8 +210,8 @@ function FilePathCell({ icon, path }: { icon: "flg" | "dat"; path: string }) {
 
 function EmptyResult({ scanned }: { scanned: boolean }) {
   return (
-    <div className="mt-4 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-16 text-center">
-      <Inbox className="mb-3 h-8 w-8 text-muted-foreground/60" />
+    <div className="mt-2 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-12 text-center">
+      <Inbox className="mb-2 h-7 w-7 text-muted-foreground/60" />
       <p className="text-sm font-medium text-muted-foreground">
         {scanned ? "目录中暂无识别到的 GUT 文件对" : "尚未扫描"}
       </p>

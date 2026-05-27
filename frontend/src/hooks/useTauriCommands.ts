@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
+  ConnectionTestResult,
   DatabaseConfig,
   GutFilePair,
   LlmConfig,
@@ -36,12 +37,31 @@ export function useTauriCommands() {
     }
   };
 
-  const testConnection = async (config: DatabaseConfig): Promise<boolean> => {
+  const testConnection = async (config: DatabaseConfig): Promise<ConnectionTestResult> => {
     try {
-      return await invoke<boolean>("test_connection", { config });
+      const ok = await invoke<boolean>("test_connection", { config });
+      return { ok };
     } catch (e) {
-      console.error("test_connection failed:", e);
-      return false;
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("test_connection failed:", msg);
+      return { ok: false, error: msg };
+    }
+  };
+
+  const getAppLogs = async (): Promise<string[]> => {
+    try {
+      return await invoke<string[]>("get_app_logs");
+    } catch (e) {
+      console.error("get_app_logs failed:", e);
+      return [];
+    }
+  };
+
+  const clearAppLogs = async (): Promise<void> => {
+    try {
+      await invoke("clear_app_logs");
+    } catch (e) {
+      console.error("clear_app_logs failed:", e);
     }
   };
 
@@ -111,5 +131,7 @@ export function useTauriCommands() {
     testLlmConnection,
     getReport,
     saveReport,
+    getAppLogs,
+    clearAppLogs,
   };
 }
