@@ -2,6 +2,13 @@
 
 本项目变更记录采用 [语义化版本](https://semver.org/lang/zh-CN/) 进行版本管理。
 
+## [1.8.10] - 2026-05-27
+
+### 修复
+
+- 修复 openGauss 连接在初始化阶段失败的问题：openGauss 分支改为使用专门的 `PgConnectOptions` 构造逻辑，显式关闭 `sqlx` 默认的 `extra_float_digits=2` 启动参数，并忽略空白 `schema`，避免兼容层在握手阶段拒绝连接
+- 新增 openGauss 连接回归测试：通过环境变量显式开启外部容器探活，覆盖 `create_loader` 与 `test_connection` 的真实连接路径
+
 ## [1.8.9] - 2026-05-27
 
 ### 修复

@@ -475,7 +475,121 @@ fn write_padded(buf: &mut Vec<u8>, value: &str, width: usize) {
     }
 }
 
-/// 测试10：报告生成验证
+fn opengauss_config_from_env() -> DatabaseConfig {
+    DatabaseConfig {
+        db_type: "opengauss".to_string(),
+        host: std::env::var("GUT_LOADER_OPENGAUSS_HOST")
+            .unwrap_or_else(|_| "172.20.10.12".to_string()),
+        port: std::env::var("GUT_LOADER_OPENGAUSS_PORT")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(8889),
+        database: std::env::var("GUT_LOADER_OPENGAUSS_DB")
+            .unwrap_or_else(|_| "postgres".to_string()),
+        username: std::env::var("GUT_LOADER_OPENGAUSS_USER")
+            .unwrap_or_else(|_| "gaussdb".to_string()),
+        password: std::env::var("GUT_LOADER_OPENGAUSS_PASSWORD")
+            .unwrap_or_else(|_| "OpenGauss@123".to_string()),
+        schema: None,
+    }
+}
+
+async fn sqlx_drop_table_opengauss(config: &DatabaseConfig, table: &str) {
+    use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
+
+    let options = PgConnectOptions::new()
+        .host(&config.host)
+        .port(config.port)
+        .username(&config.username)
+        .password(&config.password)
+        .database(&config.database)
+        .extra_float_digits(None);
+
+    if let Ok(pool) = PgPoolOptions::new()
+        .max_connections(1)
+        .acquire_timeout(std::time::Duration::from_secs(5))
+        .connect_with(options)
+        .await
+    {
+        let sql = format!("DROP TABLE IF EXISTS \"{}\"", table);
+        let _ = sqlx::query(&sql).execute(&pool).await;
+        pool.close().await;
+    }
+}
+
+fn rewrite_flg_table_name(src: &PathBuf, new_table: &str) -> std::io::Result<PathBuf> {
+    let content = std::fs::read_to_string(src)?;
+    let dir = src.parent().unwrap();
+    let new_name = format!("{new_table}.20260421.000000.0000.flg");
+    let new_path = dir.join(new_name);
+    std::fs::write(&new_path, content)?;
+    Ok(new_path)
+}
+
+/// 测试10：openGauss 外部容器连通性探活。
+///
+/// 仅在显式设置 `GUT_LOADER_OPENGAUSS_TEST=1` 时执行，避免常规测试依赖外部容器。
+#[tokio::test]
+async fn test_opengauss_connection_when_enabled() {
+    if std::env::var("GUT_LOADER_OPENGAUSS_TEST").ok().as_deref() != Some("1") {
+        eprintln!("跳过 openGauss 测试（设置 GUT_LOADER_OPENGAUSS_TEST=1 可启用）");
+        return;
+    }
+
+    let config = opengauss_config_from_env();
+    let loader = database::create_loader(&config)
+        .await
+        .expect("openGauss 连接创建失败");
+    assert!(loader.test_connection().await.expect("openGauss 探活失败"));
+    let _ = loader.close().await;
+}
+
+/// 测试11：openGauss 外部容器完整导入流程。
+///
+/// 覆盖连接、建表、批量插入和行数校验，默认跳过以避免常规测试依赖外部容器。
+#[tokio::test]
+async fn test_opengauss_full_load_when_enabled() {
+    if std::env::var("GUT_LOADER_OPENGAUSS_TEST").ok().as_deref() != Some("1") {
+        eprintln!("跳过 openGauss 导入测试（设置 GUT_LOADER_OPENGAUSS_TEST=1 可启用）");
+        return;
+    }
+
+    let config = opengauss_config_from_env();
+    let loader = database::create_loader(&config)
+        .await
+        .expect("openGauss 连接创建失败");
+
+    let dir = example_data_dir();
+    let pairs = parser::scan_directory(&dir).unwrap();
+    let employee_pair = pairs.iter().find(|p| p.table_name == "employee").unwrap();
+    let source_flg = PathBuf::from(&employee_pair.flg_path);
+    let dat_path = PathBuf::from(&employee_pair.dat_path);
+    let table = "employee_opengauss_test";
+    let flg_path =
+        rewrite_flg_table_name(&source_flg, table).expect("生成 openGauss 临时 FLG 失败");
+
+    sqlx_drop_table_opengauss(&config, table).await;
+
+    let report = batch::load_table(loader.as_ref(), &flg_path, &dat_path, None)
+        .await
+        .expect("openGauss 导入失败");
+    assert_eq!(report.table_name, table);
+    assert_eq!(report.row_count, 800);
+    assert_eq!(report.success_count, 800);
+    assert_eq!(report.failed_count, 0);
+
+    let count = loader
+        .get_row_count(table)
+        .await
+        .expect("openGauss 行数查询失败");
+    assert_eq!(count, 800);
+
+    let _ = loader.close().await;
+    sqlx_drop_table_opengauss(&config, table).await;
+    let _ = std::fs::remove_file(flg_path);
+}
+
+/// 测试12：报告生成验证
 #[test]
 fn test_report_generation() {
     let mut gen = ReportGenerator::new();

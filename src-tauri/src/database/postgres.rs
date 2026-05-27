@@ -18,6 +18,35 @@ fn pg_cast_suffix(col_type: &ColumnType) -> &'static str {
     }
 }
 
+/// openGauss 兼容 PostgreSQL 协议，但对部分 PostgreSQL 默认启动参数支持不完整。
+///
+/// 这里专门为 openGauss 去掉 `extra_float_digits`，避免 sqlx 默认握手参数在启动阶段
+/// 就被服务端拒绝，导致工具表面上表现为“连不上数据库”。
+fn build_connect_options(config: &DatabaseConfig) -> PgConnectOptions {
+    let mut options = PgConnectOptions::new()
+        .host(&config.host)
+        .port(config.port)
+        .username(&config.username)
+        .password(&config.password)
+        .database(&config.database);
+
+    if config.db_type.eq_ignore_ascii_case("opengauss") {
+        options = options.extra_float_digits(None);
+    }
+
+    // schema 为空串时不发送 search_path，避免 openGauss 在连接阶段处理空参数。
+    if let Some(schema) = config
+        .schema
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+    {
+        options = options.options([("search_path", schema)]);
+    }
+
+    options
+}
+
 /// PostgreSQL 加载器
 pub struct PostgresLoader {
     pool: PgPool,
@@ -27,17 +56,7 @@ pub struct PostgresLoader {
 impl PostgresLoader {
     /// 根据配置创建 PostgreSQL 连接池。
     pub async fn new(config: &DatabaseConfig) -> Result<Self> {
-        let mut options = PgConnectOptions::new()
-            .host(&config.host)
-            .port(config.port)
-            .username(&config.username)
-            .password(&config.password)
-            .database(&config.database);
-
-        // 如果指定了 schema，则设置 search_path
-        if let Some(schema) = &config.schema {
-            options = options.options([("search_path", schema.as_str())]);
-        }
+        let options = build_connect_options(config);
 
         info!(
             "连接 PostgreSQL: {}:{}/{}",
@@ -69,6 +88,50 @@ impl PostgresLoader {
         } else {
             format!("\"{}\"", table_name)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::build_connect_options;
+    use crate::models::DatabaseConfig;
+
+    #[test]
+    fn opengauss_connect_options_disable_extra_float_digits_and_ignore_empty_schema() {
+        let config = DatabaseConfig {
+            db_type: "opengauss".to_string(),
+            host: "172.20.10.12".to_string(),
+            port: 8889,
+            database: "postgres".to_string(),
+            username: "gaussdb".to_string(),
+            password: "OpenGauss@123".to_string(),
+            schema: Some("   ".to_string()),
+        };
+
+        let options = build_connect_options(&config);
+        let debug = format!("{:?}", options);
+        assert!(
+            !debug.contains("extra_float_digits: Some(\"2\")"),
+            "openGauss 连接选项不应携带 sqlx 默认的 extra_float_digits=2: {debug}"
+        );
+        assert_eq!(options.get_options(), None);
+        assert_eq!(options.get_application_name(), None);
+    }
+
+    #[test]
+    fn postgres_connect_options_keep_schema_search_path() {
+        let config = DatabaseConfig {
+            db_type: "postgresql".to_string(),
+            host: "127.0.0.1".to_string(),
+            port: 5432,
+            database: "postgres".to_string(),
+            username: "postgres".to_string(),
+            password: "postgres".to_string(),
+            schema: Some("public".to_string()),
+        };
+
+        let options = build_connect_options(&config);
+        assert_eq!(options.get_options(), Some("-c search_path=public"));
     }
 }
 

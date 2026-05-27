@@ -37,6 +37,7 @@ docs/archives
 
 # Agent
 .omc
+.chat
 
 # 达梦 ODBC 驱动二进制（由开发者从达梦官网下载放入）
 src-tauri/bundled-drivers/dm-odbc/**/*.so
