@@ -1,7 +1,6 @@
 //! 磁盘空间预校验。
 
 use std::path::Path;
-use std::process::Command;
 
 use tracing::{debug, warn};
 
@@ -163,6 +162,8 @@ fn get_available_space(path: &Path) -> anyhow::Result<u64> {
 /// Unix/macOS: 通过 `df -k` 命令获取可用空间。
 #[cfg(not(target_os = "windows"))]
 fn get_available_space_unix(path: &Path) -> anyhow::Result<u64> {
+    use std::process::Command;
+
     let output = Command::new("df")
         .arg("-k")
         .arg(path)

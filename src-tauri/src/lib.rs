@@ -8,7 +8,6 @@ pub mod parser;
 pub mod report;
 pub mod validator;
 
-#[cfg(debug_assertions)]
 use tauri::Manager;
 
 use commands::AppState;
@@ -138,24 +137,33 @@ fn wide_array_to_string(chars: &[u16]) -> String {
     String::from_utf16_lossy(&chars[..len])
 }
 
+/// DWM 扩展边框结构体（windows_sys 未提供，手动定义）
+#[cfg(target_os = "windows")]
+#[repr(C)]
+struct Margins {
+    cx_left_width: i32,
+    cx_right_width: i32,
+    cy_top_height: i32,
+    cy_bottom_height: i32,
+}
+
 /// Windows: 通过 DWM API 为无边框窗口启用原生阴影效果
 #[cfg(target_os = "windows")]
 fn enable_windows_shadow(window: &tauri::WebviewWindow) {
-    use windows_sys::Win32::Graphics::Dwm::{DwmExtendFrameIntoClientArea, MARGINS};
-    use tauri::Manager;
+    use windows_sys::Win32::Graphics::Dwm::DwmExtendFrameIntoClientArea;
 
     let hwnd = window.hwnd().unwrap().0;
 
     // 将边框延伸到客户区，值 -1 表示扩展到所有边缘
-    let margins = MARGINS {
-        cxLeftWidth: -1,
-        cxRightWidth: -1,
-        cyTopHeight: -1,
-        cyBottomHeight: -1,
+    let margins = Margins {
+        cx_left_width: -1,
+        cx_right_width: -1,
+        cy_top_height: -1,
+        cy_bottom_height: -1,
     };
 
     unsafe {
-        DwmExtendFrameIntoClientArea(hwnd, &margins);
+        DwmExtendFrameIntoClientArea(hwnd, &margins as *const _ as *const _);
     }
 }
 
