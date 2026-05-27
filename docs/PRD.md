@@ -296,7 +296,7 @@ DDL 类型映射：
 #### 2.8.6 设计系统与可视化
 
 - 字体：标题与正文使用 Inter Tight，所有数值与代码采用 JetBrains Mono 等宽显示
-- 主题：基于 shadcn 的 CSS 变量体系，遵循 DESIGN.md 定义的 Claude 品牌风格——暖奶油画布（#faf9f5）、珊瑚色主色（#cc785c）、深海军蓝深色面板（#181715），琥珀色用于强调，语义色（success / warning / destructive）用于状态反馈
+- 主题：基于 shadcn 的 CSS 变量体系，遵循 DESIGN.md 定义的设计规范——暖奶油画布（#faf9f5）、珊瑚色主色（#cc785c）、深海军蓝深色面板（#181715），琥珀色用于强调，语义色（success / warning / destructive）用于状态反馈
 - 圆角层级化：4px（xs）→ 6px（sm）→ 8px（md，按钮/输入框）→ 12px（lg，内容卡片）→ 16px（xl，主容器）→ pill（徽章）
 - 全局背景：使用纯色主题背景与实体卡片，避免在无硬件加速环境中产生昂贵的软件光栅化
 - 报告页：使用 recharts 渲染速率柱状图与成功/失败饼图，颜色与全局主题对齐

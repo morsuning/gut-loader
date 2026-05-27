@@ -6,7 +6,7 @@
 
 ### 变更
 
-- 前端设计系统按 DESIGN.md 规范迁移至 Claude 品牌风格：页面背景改为暖奶油色（#faf9f5）、主色从深蓝改为珊瑚色（#cc785c）、卡片背景改为奶油色（#efe9de）、深色面板统一为海军蓝（#181715）
+- 前端设计系统按 DESIGN.md 规范迁移：页面背景改为暖奶油色（#faf9f5）、主色从深蓝改为珊瑚色（#cc785c）、卡片背景改为奶油色（#efe9de）、深色面板统一为海军蓝（#181715）
 - CSS 变量层新增 `--surface-dark`、`--success`、`--warning`、`--accent-teal`、`--hairline` 等语义色 token，消除所有硬编码的 emerald / amber / zinc Tailwind 色值
 - 圆角体系从统一 0.6rem 改为层级化 scale（4px / 6px / 8px / 12px / 16px / pill），小元素用小圆角、大容器用大圆角
 - 日志终端面板改用深海军蓝底色（#181715），符合 DESIGN.md 中 code-window-card 规范
