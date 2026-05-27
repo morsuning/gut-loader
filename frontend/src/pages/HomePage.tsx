@@ -243,12 +243,8 @@ function Header({ onReset }: { onReset: () => void }) {
   );
 }
 
-/** 窗口控制按钮（最小化/最大化/关闭）- 仅 Windows/Linux 显示 */
+/** 窗口控制按钮（最小化/最大化/关闭）- 全平台显示 */
 function WindowControls() {
-  // macOS 使用原生红绿灯按钮，不需要自定义控制
-  const isMac = navigator.platform.includes("Mac") || navigator.userAgent.includes("Mac");
-  if (isMac) return null;
-
   const handleMinimize = async () => {
     const { getCurrentWindow } = await import("@tauri-apps/api/window");
     getCurrentWindow().minimize();

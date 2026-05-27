@@ -8,8 +8,6 @@ pub mod parser;
 pub mod report;
 pub mod validator;
 
-use tauri::Manager;
-
 use commands::AppState;
 use tracing_subscriber::prelude::*;
 
@@ -45,17 +43,19 @@ pub fn run() {
             commands::get_app_logs,
             commands::clear_app_logs,
         ])
-        .setup(|app| {
+        .setup(|_app| {
             #[cfg(debug_assertions)]
             {
-                let window = app.get_webview_window("main").unwrap();
+                use tauri::Manager;
+                let window = _app.get_webview_window("main").unwrap();
                 window.open_devtools();
             }
 
             // Windows: 无边框窗口恢复原生阴影
             #[cfg(target_os = "windows")]
             {
-                if let Some(window) = app.get_webview_window("main") {
+                use tauri::Manager;
+                if let Some(window) = _app.get_webview_window("main") {
                     enable_windows_shadow(&window);
                 }
             }
