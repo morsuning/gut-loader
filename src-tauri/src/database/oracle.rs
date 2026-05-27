@@ -107,14 +107,15 @@ impl OracleLoader {
 
 #[async_trait]
 impl DatabaseLoader for OracleLoader {
-    /// 通过 `SELECT 1 FROM DUAL` 验证连接连通性。
+    /// 通过无结果集 PL/SQL 块验证连接连通性。
     async fn test_connection(&self) -> Result<bool> {
-        let result = self
-            .conn
-            .query("SELECT 1 FROM DUAL", &[])
+        // Codex: oracle-rs 0.1 在部分 Oracle 服务端上解码 `SELECT 1 FROM DUAL`
+        // 可能触发 buffer underflow；探活只需验证会话可执行语句，不需要读取行数据。
+        self.conn
+            .execute("BEGIN NULL; END;", &[])
             .await
             .map_err(|e| anyhow!("Oracle 连接测试失败: {}", e))?;
-        Ok(!result.rows.is_empty())
+        Ok(true)
     }
 
     /// 在目标 schema 中创建表。

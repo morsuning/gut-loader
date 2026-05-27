@@ -2,6 +2,13 @@
 
 本项目变更记录采用 [语义化版本](https://semver.org/lang/zh-CN/) 进行版本管理。
 
+## [1.9.1] - 2026-05-27
+
+### 修复
+
+- 修复 Windows 下 GaussDB / openGauss 测试连接进入 `rustls` TLS 客户端证书协商后失败的问题：Gauss 系 PG 兼容连接显式禁用 TLS，并复用去除 `extra_float_digits` 的兼容参数
+- 修复 Oracle 测试连接报 `buffer underflow: need 1 bytes but only 0 available` 的问题：探活语句改为无结果集 PL/SQL 块，避免 `oracle-rs` 在部分 Oracle 服务端上解码 `SELECT 1 FROM DUAL` 结果集失败
+
 ## [1.9.0] - 2026-05-27
 
 ### 新增

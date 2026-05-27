@@ -4,7 +4,7 @@ use super::DatabaseLoader;
 use crate::models::{ColumnType, DataRow, DatabaseConfig, FlgMetadata};
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use sqlx::postgres::{PgConnectOptions, PgPool, PgPoolOptions};
+use sqlx::postgres::{PgConnectOptions, PgPool, PgPoolOptions, PgSslMode};
 use sqlx::Row;
 use tracing::{debug, info};
 
@@ -18,9 +18,16 @@ fn pg_cast_suffix(col_type: &ColumnType) -> &'static str {
     }
 }
 
-/// openGauss 兼容 PostgreSQL 协议，但对部分 PostgreSQL 默认启动参数支持不完整。
+fn is_gauss_compatible(db_type: &str) -> bool {
+    matches!(
+        db_type.to_ascii_lowercase().as_str(),
+        "opengauss" | "gaussdb"
+    )
+}
+
+/// openGauss/GaussDB 兼容 PostgreSQL 协议，但对部分 PostgreSQL 默认启动参数支持不完整。
 ///
-/// 这里专门为 openGauss 去掉 `extra_float_digits`，避免 sqlx 默认握手参数在启动阶段
+/// 这里专门为 Gauss 系数据库去掉 `extra_float_digits`，避免 sqlx 默认握手参数在启动阶段
 /// 就被服务端拒绝，导致工具表面上表现为“连不上数据库”。
 fn build_connect_options(config: &DatabaseConfig) -> PgConnectOptions {
     let mut options = PgConnectOptions::new()
@@ -30,8 +37,12 @@ fn build_connect_options(config: &DatabaseConfig) -> PgConnectOptions {
         .password(&config.password)
         .database(&config.database);
 
-    if config.db_type.eq_ignore_ascii_case("opengauss") {
-        options = options.extra_float_digits(None);
+    if is_gauss_compatible(&config.db_type) {
+        // Codex: 当前连接配置没有证书字段，显式禁用 TLS 可避免 Windows 下
+        // sqlx 默认 Prefer 进入 rustls 客户端证书协商后失败。
+        options = options
+            .extra_float_digits(None)
+            .ssl_mode(PgSslMode::Disable);
     }
 
     // schema 为空串时不发送 search_path，避免 openGauss 在连接阶段处理空参数。
@@ -97,7 +108,7 @@ mod tests {
     use crate::models::DatabaseConfig;
 
     #[test]
-    fn opengauss_connect_options_disable_extra_float_digits_and_ignore_empty_schema() {
+    fn opengauss_connect_options_disable_incompatible_defaults_and_ignore_empty_schema() {
         let config = DatabaseConfig {
             db_type: "opengauss".to_string(),
             host: "172.20.10.12".to_string(),
@@ -114,8 +125,37 @@ mod tests {
             !debug.contains("extra_float_digits: Some(\"2\")"),
             "openGauss 连接选项不应携带 sqlx 默认的 extra_float_digits=2: {debug}"
         );
+        assert!(
+            matches!(options.get_ssl_mode(), sqlx::postgres::PgSslMode::Disable),
+            "openGauss 连接选项应显式禁用 TLS，避免无证书配置进入 rustls 握手: {debug}"
+        );
         assert_eq!(options.get_options(), None);
         assert_eq!(options.get_application_name(), None);
+    }
+
+    #[test]
+    fn gaussdb_connect_options_share_opengauss_compatibility_defaults() {
+        let config = DatabaseConfig {
+            db_type: "gaussdb".to_string(),
+            host: "10.20.30.40".to_string(),
+            port: 5432,
+            database: "ods".to_string(),
+            username: "loader".to_string(),
+            password: "P@ssw0rd".to_string(),
+            schema: Some("raw".to_string()),
+        };
+
+        let options = build_connect_options(&config);
+        let debug = format!("{:?}", options);
+        assert!(
+            !debug.contains("extra_float_digits: Some(\"2\")"),
+            "GaussDB 连接选项不应携带 sqlx 默认的 extra_float_digits=2: {debug}"
+        );
+        assert!(
+            matches!(options.get_ssl_mode(), sqlx::postgres::PgSslMode::Disable),
+            "GaussDB 连接选项应显式禁用 TLS，避免无证书配置进入 rustls 握手: {debug}"
+        );
+        assert_eq!(options.get_options(), Some("-c search_path=raw"));
     }
 
     #[test]
@@ -131,6 +171,10 @@ mod tests {
         };
 
         let options = build_connect_options(&config);
+        assert!(matches!(
+            options.get_ssl_mode(),
+            sqlx::postgres::PgSslMode::Prefer
+        ));
         assert_eq!(options.get_options(), Some("-c search_path=public"));
     }
 }
