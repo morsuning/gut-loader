@@ -37,6 +37,8 @@ windows-sys = { version = "0.61", features = ["Win32_Graphics_Gdi", "Win32_Graph
 
 [features]
 default = []
+# 开发工具，仅在手动 cargo build --features dev-tools 时编译
+dev-tools = []
 
 [target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
 odbc-api = "8"
@@ -66,7 +68,9 @@ path = "src/main.rs"
 [[bin]]
 name = "generate_test_data"
 path = "src/bin/generate_test_data.rs"
+required-features = ["dev-tools"]
 
 [[bin]]
 name = "run_benchmark"
 path = "src/bin/run_benchmark.rs"
+required-features = ["dev-tools"]

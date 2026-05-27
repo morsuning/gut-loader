@@ -43,6 +43,21 @@ export function useLoadingEvents() {
 
       const u2 = await listen<TableReport>("table-completed", (event) => {
         const t = event.payload;
+        // 同步更新进度数组：将已完成表的状态标记为 completed，确保总进度计算正确
+        const list = useAppStore.getState().loadingProgress;
+        const idx = list.findIndex((x) => x.table_name === t.table_name);
+        if (idx >= 0) {
+          const next = [...list];
+          next[idx] = {
+            ...next[idx],
+            loaded_rows: t.success_count,
+            failed_rows: t.failed_count,
+            status: t.failed_count > 0 ? "completed_with_errors" : "completed",
+            speed: t.speed,
+            elapsed_ms: t.elapsed_ms,
+          };
+          setLoadingProgress(next);
+        }
         appendLoadingLog(
           `[${formatNow()}] >> 表 ${t.table_name} 完成: 成功 ${t.success_count} / 失败 ${t.failed_count} / ${formatMs(t.elapsed_ms)}`,
         );

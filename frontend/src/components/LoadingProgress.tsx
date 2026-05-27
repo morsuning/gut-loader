@@ -25,6 +25,7 @@ export function LoadingProgress() {
   const isLoading = useAppStore((s) => s.isLoading);
   const setIsLoading = useAppStore((s) => s.setIsLoading);
   const loadingProgress = useAppStore((s) => s.loadingProgress);
+  const setLoadingProgress = useAppStore((s) => s.setLoadingProgress);
   const loadingLogs = useAppStore((s) => s.loadingLogs);
   const appendLoadingLog = useAppStore((s) => s.appendLoadingLog);
   const clearLoadingLogs = useAppStore((s) => s.clearLoadingLogs);
@@ -62,6 +63,7 @@ export function LoadingProgress() {
       return;
     }
     setIsLoading(true);
+    setLoadingProgress([]);
     clearLoadingLogs();
     appendLoadingLog(
       `[${formatNow()}] >> 启动加载任务  dir=${selectedDirectory}  target=${dbConfig.db_type}://${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`,

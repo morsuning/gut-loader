@@ -144,7 +144,7 @@ export function DatabaseConfig() {
     setSaveDialogOpen(false);
   };
 
-  const handleDeleteConfig = (id: string, e: React.MouseEvent) => {
+  const handleDeleteConfig = (id: string, e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
     const cfg = savedDbConfigs.find((c) => c.id === id);
@@ -192,7 +192,7 @@ export function DatabaseConfig() {
                       <button
                         type="button"
                         className="ml-1 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm hover:bg-destructive/20 hover:text-destructive"
-                        onClick={(e) => handleDeleteConfig(cfg.id, e)}
+                        onPointerDown={(e) => handleDeleteConfig(cfg.id, e)}
                       >
                         <X className="h-3 w-3" />
                       </button>
