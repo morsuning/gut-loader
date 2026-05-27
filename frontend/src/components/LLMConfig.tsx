@@ -58,16 +58,19 @@ export function LLMConfig() {
   };
 
   return (
-    <div className="space-y-4 rounded-lg border bg-muted/20 p-4">
+    /* DESIGN.md: LLM 配置区域用奶油色 muted 背景 */
+    <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-amber-500" />
+          {/* DESIGN.md: LLM 图标用 accent（琥珀色） */}
+          <Sparkles className="h-4 w-4 text-accent" />
           <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
             LLM Endpoint
           </p>
         </div>
         {saved && (
-          <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 animate-in fade-in">
+          /* DESIGN.md: 保存成功用 success 绿色 */
+          <span className="flex items-center gap-1 text-xs text-success animate-in fade-in">
             <Check className="h-3 w-3" />
             已自动保存
           </span>

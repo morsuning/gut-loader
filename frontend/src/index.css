@@ -4,65 +4,97 @@
 
 @layer base {
   :root {
-    --background: 40 33% 98%;
-    --foreground: 222 30% 11%;
+    /* ── DESIGN.md 语义色板（Claude 品牌） ── */
+    --background: 43 25% 97%;       /* #faf9f5 奶油画布 */
+    --foreground: 50 5% 8%;         /* #141413 暖墨色 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 30% 11%;
+    --card: 36 33% 94%;             /* #efe9de 奶油卡片 */
+    --card-foreground: 50 5% 8%;    /* #141413 */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 30% 11%;
+    --popover: 43 25% 97%;          /* #faf9f5 */
+    --popover-foreground: 50 5% 8%; /* #141413 */
 
-    --primary: 222 35% 14%;
-    --primary-foreground: 40 33% 98%;
+    --primary: 16 54% 58%;          /* #cc785c 珊瑚主色 */
+    --primary-foreground: 0 0% 100%;/* #ffffff */
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 35% 14%;
+    --secondary: 36 33% 94%;        /* #efe9de 奶油卡片 */
+    --secondary-foreground: 50 5% 8%;/* #141413 */
 
-    --muted: 220 14% 95%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 36 25% 91%;            /* #e6dfd8 毛线色 */
+    --muted-foreground: 40 5% 40%;  /* #6c6a64 弱文字 */
 
-    --accent: 38 95% 60%;
-    --accent-foreground: 24 95% 14%;
+    --accent: 36 60% 63%;           /* #e8a55a 琥珀强调 */
+    --accent-foreground: 24 80% 10%;/* 深暖色 */
 
-    --destructive: 0 75% 52%;
+    --destructive: 0 55% 52%;       /* #c64545 错误红 */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 89%;
-    --input: 220 13% 89%;
-    --ring: 222 35% 14%;
+    --border: 36 30% 87%;           /* #e6dfd8 边框 */
+    --input: 36 30% 87%;            /* #e6dfd8 */
+    --ring: 16 54% 58%;             /* #cc785c 珊瑚焦点环 */
 
-    --radius: 0.6rem;
+    --radius: 0.5rem;
+
+    /* ── DESIGN.md 扩展色（用于组件内联） ── */
+    --surface-dark: 30 6% 9%;            /* #181715 深色面板 */
+    --surface-dark-elevated: 30 5% 14%;  /* #252320 */
+    --surface-dark-soft: 30 4% 11%;      /* #1f1e1b */
+    --on-dark: 43 25% 97%;              /* #faf9f5 */
+    --on-dark-soft: 35 8% 60%;          /* #a09d96 */
+    --success: 152 45% 55%;             /* #5db872 成功绿 */
+    --success-light: 152 40% 94%;       /* 浅绿背景 */
+    --warning: 45 75% 50%;              /* #d4a017 警告黄 */
+    --warning-light: 45 60% 92%;        /* 浅黄背景 */
+    --hairline: 36 30% 87%;             /* #e6dfd8 */
+    --hairline-soft: 36 25% 92%;        /* #ebe6df */
+    --coral-active: 16 48% 45%;         /* #a9583e 珊瑚按下 */
+    --coral-disabled: 36 25% 88%;       /* #e6dfd8 珊瑚禁用 */
+    --accent-teal: 168 40% 55%;         /* #5db8a6 青绿点缀 */
   }
 
   .dark {
-    --background: 222 30% 7%;
-    --foreground: 40 25% 96%;
+    --background: 30 6% 9%;
+    --foreground: 43 25% 97%;
 
-    --card: 222 25% 10%;
-    --card-foreground: 40 25% 96%;
+    --card: 30 5% 14%;
+    --card-foreground: 43 25% 97%;
 
-    --popover: 222 25% 10%;
-    --popover-foreground: 40 25% 96%;
+    --popover: 30 5% 14%;
+    --popover-foreground: 43 25% 97%;
 
-    --primary: 40 25% 96%;
-    --primary-foreground: 222 35% 12%;
+    --primary: 16 54% 58%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 20% 16%;
-    --secondary-foreground: 40 25% 96%;
+    --secondary: 30 4% 18%;
+    --secondary-foreground: 43 25% 97%;
 
-    --muted: 222 20% 14%;
-    --muted-foreground: 220 10% 65%;
+    --muted: 30 4% 14%;
+    --muted-foreground: 35 8% 60%;
 
-    --accent: 38 95% 60%;
-    --accent-foreground: 24 95% 14%;
+    --accent: 36 60% 63%;
+    --accent-foreground: 24 80% 10%;
 
-    --destructive: 0 70% 55%;
+    --destructive: 0 50% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 20% 18%;
-    --input: 222 20% 18%;
-    --ring: 38 95% 60%;
+    --border: 30 4% 18%;
+    --input: 30 4% 18%;
+    --ring: 36 60% 63%;
+
+    --surface-dark: 30 6% 9%;
+    --surface-dark-elevated: 30 5% 14%;
+    --surface-dark-soft: 30 4% 11%;
+    --on-dark: 43 25% 97%;
+    --on-dark-soft: 35 8% 60%;
+    --success: 152 45% 55%;
+    --success-light: 152 30% 15%;
+    --warning: 45 75% 50%;
+    --warning-light: 45 40% 15%;
+    --hairline: 30 4% 18%;
+    --hairline-soft: 30 4% 14%;
+    --coral-active: 16 48% 45%;
+    --coral-disabled: 30 4% 25%;
+    --accent-teal: 168 40% 55%;
   }
 }
 
@@ -81,8 +113,9 @@
   }
 
   body {
+    /* DESIGN.md: 人类学无衬线体作为正文，衬线体仅用于展示标题 */
     font-family:
-      "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "Inter", "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI",
       "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Roboto, Helvetica, Arial, sans-serif;
     font-feature-settings: "ss01", "cv11", "calt";
     -webkit-font-smoothing: antialiased;
@@ -125,7 +158,7 @@
 
   /* 文本选中高亮色统一 */
   ::selection {
-    background-color: hsl(var(--accent) / 0.3);
+    background-color: hsl(var(--primary) / 0.2);
     color: hsl(var(--foreground));
   }
 

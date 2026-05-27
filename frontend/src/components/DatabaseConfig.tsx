@@ -167,10 +167,11 @@ export function DatabaseConfig() {
         </p>
       </header>
 
-      {/* 主连接表单 */}
-      <div className="rounded-xl border bg-card p-4">
+      {/* 主连接表单 — DESIGN.md: 奶油卡片 rounded-lg */}
+      <div className="rounded-lg border bg-card p-4">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
+            {/* DESIGN.md: 图标用 primary（珊瑚色） */}
             <PlugZap className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-semibold tracking-wide">连接参数</h3>
           </div>
@@ -352,15 +353,16 @@ export function DatabaseConfig() {
         </DialogContent>
       </Dialog>
 
-      {/* LLM 智能填充 */}
-      <div className="overflow-hidden rounded-xl border bg-card">
+      {/* LLM 智能填充 — DESIGN.md: rounded-lg 奶油卡片 */}
+      <div className="overflow-hidden rounded-lg border bg-card">
         <div className="flex w-full items-center justify-between gap-3 px-4 py-3">
           <button
             type="button"
             onClick={() => setShowAi((s) => !s)}
             className="flex flex-1 items-center gap-2 text-left transition-colors"
           >
-            <span className="grid h-8 w-8 place-items-center rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            {/* DESIGN.md: LLM 图标用 accent（琥珀色）浅底 */}
+            <span className="grid h-8 w-8 place-items-center rounded-md bg-accent/10 text-accent">
               <Sparkles className="h-4 w-4" />
             </span>
             <span>
@@ -382,8 +384,9 @@ export function DatabaseConfig() {
                 >
                   <Settings2 className="h-4 w-4" />
                   配置 LLM
+                  {/* DESIGN.md: 未配置指示点用 accent（琥珀色） */}
                   {(!llmConfig.api_url || !llmConfig.model) && (
-                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-background" />
+                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-accent ring-2 ring-background" />
                   )}
                 </Button>
               </DialogTrigger>
@@ -430,7 +433,8 @@ export function DatabaseConfig() {
 
             <div className="flex items-center justify-end gap-3">
               {(!llmConfig.api_url || !llmConfig.model) && (
-                <span className="text-xs text-amber-600 dark:text-amber-400">
+                /* DESIGN.md: 提示文字用 accent（琥珀色） */
+                <span className="text-xs text-accent">
                   请先配置 LLM API URL 和模型
                 </span>
               )}
@@ -457,8 +461,8 @@ export function DatabaseConfig() {
         )}
       </div>
 
-      {/* 调试日志面板 */}
-      <div className="overflow-hidden rounded-xl border bg-card">
+      {/* 调试日志面板 — DESIGN.md: rounded-lg 卡片 */}
+      <div className="overflow-hidden rounded-lg border bg-card">
         <div className="flex w-full items-center justify-between gap-3 px-4 py-2">
           <button
             type="button"
@@ -531,14 +535,15 @@ export function DatabaseConfig() {
               </div>
             )}
 
-            {/* 应用日志 */}
+            {/* 应用日志 — DESIGN.md: 深色表面面板 */}
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-1.5">
                 应用运行日志（最近 {appLogs.length} 条）
               </p>
-              <div className="max-h-64 overflow-auto rounded-md border bg-zinc-950 p-2">
+              {/* DESIGN.md: code-window-card 深色海军底 */}
+              <div className="max-h-64 overflow-auto rounded-md border bg-surface-dark p-2">
                 {appLogs.length === 0 ? (
-                  <p className="text-xs text-zinc-500 font-mono">
+                  <p className="text-xs text-on-dark-soft font-mono">
                     暂无日志记录
                   </p>
                 ) : (
@@ -550,10 +555,10 @@ export function DatabaseConfig() {
                         key={i}
                         className={`font-mono text-[11px] leading-relaxed break-all ${
                           isError
-                            ? "text-red-400"
+                            ? "text-destructive"
                             : isWarn
-                              ? "text-yellow-400"
-                              : "text-zinc-400"
+                              ? "text-accent"
+                              : "text-on-dark-soft"
                         }`}
                       >
                         {line}

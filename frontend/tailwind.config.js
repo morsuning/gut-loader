@@ -45,11 +45,29 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        /* ── DESIGN.md 扩展色 ── */
+        "surface-dark": "hsl(var(--surface-dark))",
+        "surface-dark-elevated": "hsl(var(--surface-dark-elevated))",
+        "on-dark": "hsl(var(--on-dark))",
+        "on-dark-soft": "hsl(var(--on-dark-soft))",
+        success: "hsl(var(--success))",
+        "success-light": "hsl(var(--success-light))",
+        warning: "hsl(var(--warning))",
+        "warning-light": "hsl(var(--warning-light))",
+        "coral-active": "hsl(var(--coral-active))",
+        "coral-disabled": "hsl(var(--coral-disabled))",
+        "accent-teal": "hsl(var(--accent-teal))",
+        hairline: "hsl(var(--hairline))",
+        "hairline-soft": "hsl(var(--hairline-soft))",
       },
+      /* DESIGN.md: 层级化圆角 */
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        xs: "4px",
+        sm: "6px",
+        md: "8px",
+        lg: "12px",
+        xl: "16px",
+        pill: "9999px",
       },
       keyframes: {
         "accordion-down": {

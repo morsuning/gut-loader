@@ -42,7 +42,7 @@ export function ReportView() {
           </p>
           <h2 className="text-xl font-semibold tracking-tight">入库报告</h2>
         </header>
-        <div className="grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-16 text-center">
+        <div className="grid place-items-center rounded-lg border border-dashed bg-muted/30 px-6 py-16 text-center">
           <Award className="mb-3 h-8 w-8 text-muted-foreground/60" />
           <p className="text-sm font-medium text-muted-foreground">
             暂无报告数据
@@ -71,9 +71,10 @@ function ReportContent({ report }: { report: LoadReport }) {
   );
 
   const pieData = useMemo(
+    /* DESIGN.md: 成功用 success 绿，失败用 destructive 红 */
     () => [
-      { name: "成功", value: report.success_rows, color: "hsl(160, 65%, 45%)" },
-      { name: "失败", value: report.failed_rows, color: "hsl(0, 75%, 55%)" },
+      { name: "成功", value: report.success_rows, color: "hsl(var(--success))" },
+      { name: "失败", value: report.failed_rows, color: "hsl(var(--destructive))" },
     ],
     [report],
   );
@@ -134,9 +135,9 @@ function ReportContent({ report }: { report: LoadReport }) {
           value={`${successRatePct}%`}
           accent={
             successRatePct >= 99
-              ? "emerald"
+              ? "success"
               : successRatePct >= 90
-                ? "amber"
+                ? "accent"
                 : "destructive"
           }
         />
@@ -145,14 +146,15 @@ function ReportContent({ report }: { report: LoadReport }) {
           label="平均速率"
           value={Math.round(report.avg_speed).toLocaleString()}
           unit="rows/s"
-          accent="amber"
+          accent="accent"
         />
       </div>
 
       {/* 总耗时大数 */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/5 text-primary">
+          {/* DESIGN.md: 图标用 primary（珊瑚色）浅底 */}
+          <div className="grid h-10 w-10 place-items-center rounded-md bg-primary/10 text-primary">
             <Timer className="h-5 w-5" />
           </div>
           <div>
@@ -170,7 +172,8 @@ function ReportContent({ report }: { report: LoadReport }) {
               Success / Failed
             </p>
             <p className="font-mono text-base">
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+              {/* DESIGN.md: 成功用 success 绿 */}
+              <span className="font-semibold text-success tabular-nums">
                 {report.success_rows.toLocaleString()}
               </span>
               <span className="mx-1 text-muted-foreground">/</span>
@@ -192,10 +195,10 @@ function ReportContent({ report }: { report: LoadReport }) {
       {/* 详情表格 */}
       <section>
         <h3 className="mb-2 text-sm font-semibold tracking-wide">每表详情</h3>
-        <div className="overflow-hidden rounded-xl border bg-card">
+        <div className="overflow-hidden rounded-lg border bg-card">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs font-mono uppercase tracking-wider text-muted-foreground">
+              <tr className="border-b bg-muted/30 text-left text-xs font-mono uppercase tracking-wider text-muted-foreground">
                 <th className="px-3 py-2 font-medium">表名</th>
                 <th className="px-3 py-2 text-right font-medium">行数</th>
                 <th className="px-3 py-2 text-right font-medium">成功</th>
@@ -222,7 +225,8 @@ function ReportContent({ report }: { report: LoadReport }) {
                     <td className="px-3 py-2 text-right font-mono tabular-nums">
                       {t.row_count.toLocaleString()}
                     </td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums text-emerald-600 dark:text-emerald-400">
+                    {/* DESIGN.md: 成功用 success 绿 */}
+                    <td className="px-3 py-2 text-right font-mono tabular-nums text-success">
                       {t.success_count.toLocaleString()}
                     </td>
                     <td
@@ -249,9 +253,9 @@ function ReportContent({ report }: { report: LoadReport }) {
         </div>
       </section>
 
-      {/* 图表 */}
+      {/* 图表 — DESIGN.md: 图表柱用 primary（珊瑚色） */}
       <section className="grid gap-3 lg:grid-cols-5">
-        <div className="rounded-xl border bg-card p-4 lg:col-span-3">
+        <div className="rounded-lg border bg-card p-4 lg:col-span-3">
           <div className="mb-2 flex items-baseline justify-between">
             <h3 className="text-sm font-semibold tracking-wide">
               每表加载速率
@@ -289,9 +293,10 @@ function ReportContent({ report }: { report: LoadReport }) {
                     fontSize: 12,
                   }}
                 />
+                {/* DESIGN.md: 图表柱色用 primary（珊瑚色） */}
                 <Bar
                   dataKey="speed"
-                  fill="hsl(38, 92%, 50%)"
+                  fill="hsl(var(--primary))"
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
@@ -299,7 +304,7 @@ function ReportContent({ report }: { report: LoadReport }) {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-4 lg:col-span-2">
+        <div className="rounded-lg border bg-card p-4 lg:col-span-2">
           <div className="mb-2 flex items-baseline justify-between">
             <h3 className="text-sm font-semibold tracking-wide">
               成功 / 失败比例
@@ -355,19 +360,20 @@ function SummaryCard({
   label: string;
   value: string;
   unit?: string;
-  accent?: "emerald" | "amber" | "destructive";
+  accent?: "success" | "accent" | "destructive";
 }) {
+  /* DESIGN.md: 语义色映射 */
   const accentClass =
-    accent === "emerald"
-      ? "text-emerald-600 dark:text-emerald-400"
-      : accent === "amber"
-        ? "text-amber-600 dark:text-amber-400"
+    accent === "success"
+      ? "text-success"
+      : accent === "accent"
+        ? "text-accent"
         : accent === "destructive"
           ? "text-destructive"
           : "text-foreground";
 
   return (
-    <div className="rounded-xl border bg-card p-4">
+    <div className="rounded-lg border bg-card p-4">
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
           {label}

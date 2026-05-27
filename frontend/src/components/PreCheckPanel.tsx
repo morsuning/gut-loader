@@ -87,17 +87,19 @@ export function PreCheckPanel() {
         </p>
       </header>
 
-      <div className="rounded-xl border bg-card p-4">
+      {/* DESIGN.md: 状态卡片用 rounded-lg (12px)，奶油色背景 */}
+      <div className="rounded-lg border bg-card p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                "grid h-10 w-10 place-items-center rounded-lg",
+                "grid h-10 w-10 place-items-center rounded-md",
+                /* DESIGN.md: 错误用 --destructive，成功用 --success */
                 blocking
                   ? "bg-destructive/10 text-destructive"
                   : allGreen
-                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                    : "bg-primary/5 text-primary",
+                    ? "bg-success-light text-success"
+                    : "bg-primary/10 text-primary",
               )}
             >
               {blocking ? (
@@ -142,12 +144,12 @@ export function PreCheckPanel() {
         </div>
 
         {running && summary.total === 0 ? (
-          <div className="mt-2 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-12">
+          <div className="mt-2 grid place-items-center rounded-lg border border-dashed bg-muted/30 px-6 py-12">
             <Loader2 className="mb-2 h-6 w-6 animate-spin text-muted-foreground" />
             <p className="text-sm text-muted-foreground">正在执行预检…</p>
           </div>
         ) : preCheckResults.length === 0 ? (
-          <div className="mt-2 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-12 text-center">
+          <div className="mt-2 grid place-items-center rounded-lg border border-dashed bg-muted/30 px-6 py-12 text-center">
             <ShieldCheck className="mb-2 h-6 w-6 text-muted-foreground/60" />
             <p className="text-sm text-muted-foreground">
               点击「重新检查」以执行前置校验
@@ -177,7 +179,8 @@ function CheckItem({
   return (
     <li
       className={cn(
-        "flex items-start gap-4 rounded-lg border bg-card px-4 py-3 transition-colors",
+        /* DESIGN.md: 列表项用 rounded-md (8px) */
+        "flex items-start gap-4 rounded-md border bg-card px-4 py-3 transition-colors",
         sev.borderClass,
       )}
     >
@@ -208,16 +211,16 @@ function CheckItem({
   );
 }
 
+/* DESIGN.md: 所有语义色改用 token */
 function severityVisual(r: PreCheckResult) {
   if (r.passed) {
     return {
       icon: CheckCircle2,
       label: "通过",
-      bg: "bg-emerald-500/10",
-      fg: "text-emerald-600 dark:text-emerald-400",
-      borderClass: "border-l-2 border-l-emerald-500/60",
-      badgeClass:
-        "border-emerald-500/40 text-emerald-700 dark:text-emerald-400",
+      bg: "bg-success-light",
+      fg: "text-success",
+      borderClass: "border-l-2 border-l-success/60",
+      badgeClass: "border-success/40 text-success",
     };
   }
   const sev: Severity = r.severity;
@@ -235,10 +238,10 @@ function severityVisual(r: PreCheckResult) {
     return {
       icon: AlertTriangle,
       label: "警告",
-      bg: "bg-amber-500/10",
-      fg: "text-amber-600 dark:text-amber-400",
-      borderClass: "border-l-2 border-l-amber-500/60",
-      badgeClass: "border-amber-500/40 text-amber-700 dark:text-amber-400",
+      bg: "bg-warning-light",
+      fg: "text-warning",
+      borderClass: "border-l-2 border-l-warning/60",
+      badgeClass: "border-warning/40 text-warning",
     };
   }
   return {

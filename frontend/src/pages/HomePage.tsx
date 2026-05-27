@@ -153,7 +153,8 @@ export function HomePage() {
 
         <Separator className="my-4" />
 
-        <div className="flex-1 overflow-hidden rounded-2xl border bg-card p-6 shadow-sm md:p-8">
+        {/* DESIGN.md: 内容卡片用 rounded-lg (12px)，奶油色背景 */}
+        <div className="flex-1 overflow-hidden rounded-lg border bg-card p-6 md:p-8">
           <div className="h-full overflow-y-auto">
             <Suspense fallback={<div className="flex items-center justify-center py-20 text-sm text-muted-foreground">加载中...</div>}>
               {active.render()}
@@ -318,18 +319,23 @@ function Stepper({
               type="button"
               onClick={() => onJump(s.index)}
               className={cn(
-                "group flex w-full items-start gap-2.5 rounded-xl border bg-card px-3 py-2.5 text-left transition-colors md:px-4 md:py-3",
+                /* DESIGN.md: 步骤卡片用 rounded-lg (12px)，奶油色卡片背景 */
+                "group flex w-full items-start gap-2.5 rounded-lg border bg-card px-3 py-2.5 text-left transition-colors md:px-4 md:py-3",
+                /* 活动步骤：珊瑚色边框 + 焦点环 */
                 state === "active" &&
-                  "border-foreground/80 bg-card shadow-sm ring-1 ring-foreground/10",
-                state === "done" && "border-emerald-500/40 bg-emerald-500/5",
+                  "border-primary/80 shadow-sm ring-1 ring-primary/10",
+                /* 完成步骤：success 绿色边框 + 浅绿背景 */
+                state === "done" && "border-success/40 bg-success-light",
                 state === "todo" && "opacity-80 hover:opacity-100",
               )}
             >
               <div
                 className={cn(
                   "mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md font-mono text-xs font-semibold transition-colors",
+                  /* 完成：success 绿色填充 */
                   state === "done" &&
-                    "bg-emerald-500 text-white dark:bg-emerald-500/90",
+                    "bg-success text-white",
+                  /* 活动：深色填充（使用 foreground） */
                   state === "active" &&
                     "bg-foreground text-background",
                   state === "todo" &&
@@ -350,7 +356,7 @@ function Stepper({
                       state === "active"
                         ? "text-foreground"
                         : state === "done"
-                          ? "text-emerald-600 dark:text-emerald-400"
+                          ? "text-success"
                           : "text-muted-foreground",
                     )}
                   />

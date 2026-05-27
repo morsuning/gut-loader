@@ -75,6 +75,7 @@ export function FileSelector() {
         <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
           STEP / 01 — Source ingestion
         </p>
+        {/* DESIGN.md: 标题用正文 sans 字体，tracking-tight */}
         <h2 className="text-xl font-semibold tracking-tight">
           指向待入库的 GUT 数据目录
         </h2>
@@ -86,10 +87,12 @@ export function FileSelector() {
         </p>
       </header>
 
-      <div className="rounded-xl border border-dashed border-border bg-card/50 p-4">
+      {/* DESIGN.md: 虚线边框区域，奶油色半透明背景 */}
+      <div className="rounded-lg border border-dashed border-border bg-card/50 p-4">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-primary/5 text-primary">
+            {/* DESIGN.md: 图标区域用 primary 色（珊瑚色）浅背景 */}
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
               <Folder className="h-5 w-5" />
             </div>
             <div className="min-w-0">
@@ -144,7 +147,8 @@ export function FileSelector() {
         {filePairs.length === 0 ? (
           <EmptyResult scanned={!!selectedDirectory && !scanning} />
         ) : (
-          <ScrollArea className="mt-2 h-[280px] rounded-xl border bg-card">
+          /* DESIGN.md: 表格容器用 rounded-lg (12px) */
+          <ScrollArea className="mt-2 h-[280px] rounded-lg border bg-card">
             <table className="w-full text-sm">
               <thead className="sticky top-0 z-10 bg-card">
                 <tr className="border-b text-left text-xs font-mono uppercase tracking-wider text-muted-foreground">
@@ -210,7 +214,7 @@ function FilePathCell({ icon, path }: { icon: "flg" | "dat"; path: string }) {
 
 function EmptyResult({ scanned }: { scanned: boolean }) {
   return (
-    <div className="mt-2 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-12 text-center">
+    <div className="mt-2 grid place-items-center rounded-lg border border-dashed bg-muted/30 px-6 py-12 text-center">
       <Inbox className="mb-2 h-7 w-7 text-muted-foreground/60" />
       <p className="text-sm font-medium text-muted-foreground">
         {scanned ? "目录中暂无识别到的 GUT 文件对" : "尚未扫描"}

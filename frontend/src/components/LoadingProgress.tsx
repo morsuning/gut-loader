@@ -130,7 +130,7 @@ export function LoadingProgress() {
           label="已加载"
           value={stats.loaded.toLocaleString()}
           unit="rows"
-          accent="emerald"
+          accent="success"
         />
         <StatCard
           label="失败"
@@ -142,20 +142,21 @@ export function LoadingProgress() {
           label="当前速率"
           value={Math.round(stats.speed).toLocaleString()}
           unit="rows/s"
-          accent="amber"
+          accent="accent"
           live={isLoading}
         />
       </div>
 
       {/* 总体进度 */}
-      <div className="rounded-xl border bg-card p-4">
+      <div className="rounded-lg border bg-card p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity
               className={cn(
                 "h-4 w-4",
+                /* DESIGN.md: 加载中用 accent（琥珀色）脉冲 */
                 isLoading
-                  ? "animate-pulse text-amber-500"
+                  ? "animate-pulse text-accent"
                   : "text-muted-foreground",
               )}
             />
@@ -179,7 +180,7 @@ export function LoadingProgress() {
         </div>
 
         {loadingProgress.length === 0 ? (
-          <div className="mt-2 grid place-items-center rounded-xl border border-dashed bg-muted/20 px-6 py-8 text-center">
+          <div className="mt-2 grid place-items-center rounded-lg border border-dashed bg-muted/30 px-6 py-8 text-center">
             <CircleDashed className="mb-2 h-6 w-6 text-muted-foreground/60" />
             <p className="text-sm text-muted-foreground">
               {isLoading ? "等待后端推送进度…" : "尚未开始加载"}
@@ -194,7 +195,7 @@ export function LoadingProgress() {
         )}
       </section>
 
-      {/* 实时日志 */}
+      {/* 实时日志 — DESIGN.md: 深色表面面板 */}
       <section>
         <div className="flex items-baseline justify-between">
           <h3 className="text-sm font-semibold tracking-wide">实时日志</h3>
@@ -202,12 +203,14 @@ export function LoadingProgress() {
             tail -f
           </span>
         </div>
-        <div className="mt-2 overflow-hidden rounded-xl border bg-zinc-950 text-zinc-100">
-          <div className="flex items-center gap-1.5 border-b border-zinc-800 px-3 py-2">
-            <span className="h-2 w-2 rounded-full bg-red-500/80" />
-            <span className="h-2 w-2 rounded-full bg-yellow-500/80" />
-            <span className="h-2 w-2 rounded-full bg-emerald-500/80" />
-            <span className="ml-2 font-mono text-[11px] uppercase tracking-wider text-zinc-500">
+        {/* DESIGN.md: code-window-card — 深色海军底，on-dark 文字 */}
+        <div className="mt-2 overflow-hidden rounded-lg border bg-surface-dark text-on-dark">
+          {/* 红黄绿三点装饰 — DESIGN.md 深色表面内嵌 */}
+          <div className="flex items-center gap-1.5 border-b border-white/10 px-3 py-2">
+            <span className="h-2 w-2 rounded-full bg-destructive/80" />
+            <span className="h-2 w-2 rounded-full bg-accent/80" />
+            <span className="h-2 w-2 rounded-full bg-success/80" />
+            <span className="ml-2 font-mono text-[11px] uppercase tracking-wider text-on-dark-soft">
               gut-loader/runtime.log
             </span>
           </div>
@@ -217,20 +220,21 @@ export function LoadingProgress() {
           >
             <div className="px-4 py-3 font-mono text-xs leading-relaxed">
               {loadingLogs.length === 0 ? (
-                <span className="text-zinc-500">// no output yet</span>
+                <span className="text-on-dark-soft">// no output yet</span>
               ) : (
                 loadingLogs.map((line, i) => (
                   <div key={i} className="whitespace-pre-wrap">
-                    <span className="select-none text-zinc-600">
+                    <span className="select-none text-on-dark-soft/50">
                       {(i + 1).toString().padStart(4, "0")}{" "}
                     </span>
                     <span
                       className={cn(
+                        /* DESIGN.md: 错误红、成功绿、默认 on-dark 文字 */
                         line.includes("!!")
-                          ? "text-red-400"
+                          ? "text-destructive"
                           : line.includes(">>")
-                            ? "text-emerald-400"
-                            : "text-zinc-200",
+                            ? "text-success"
+                            : "text-on-dark",
                       )}
                     >
                       {line}
@@ -254,7 +258,7 @@ function TableRow({ progress }: { progress: LoadProgressItem }) {
   const meta = statusVisual(progress.status);
   const Icon = meta.icon;
   return (
-    <li className="rounded-lg border bg-card px-3 py-2.5">
+    <li className="rounded-md border bg-card px-3 py-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <div
@@ -323,29 +327,31 @@ function StatCard({
   label: string;
   value: string;
   unit?: string;
-  accent?: "emerald" | "destructive" | "amber";
+  accent?: "success" | "destructive" | "accent";
   live?: boolean;
 }) {
+  /* DESIGN.md: 所有语义色改用 token */
   const accentClass =
-    accent === "emerald"
-      ? "text-emerald-600 dark:text-emerald-400"
+    accent === "success"
+      ? "text-success"
       : accent === "destructive"
         ? "text-destructive"
-        : accent === "amber"
-          ? "text-amber-600 dark:text-amber-400"
+        : accent === "accent"
+          ? "text-accent"
           : "text-foreground";
 
   return (
-    <div className="relative overflow-hidden rounded-xl border bg-card p-4">
+    <div className="relative overflow-hidden rounded-lg border bg-card p-4">
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
           {label}
         </p>
         {live && (
-          <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-amber-600 dark:text-amber-400">
+          /* DESIGN.md: LIVE 指示灯用 accent（琥珀色） */
+          <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-accent">
             <span className="relative inline-flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
             </span>
             LIVE
           </span>
@@ -363,13 +369,14 @@ function StatCard({
   );
 }
 
+/* DESIGN.md: 状态视觉映射 */
 function statusVisual(s: LoadStatus) {
   switch (s) {
     case "completed":
       return {
         icon: CheckCircle2,
-        bg: "bg-emerald-500/10",
-        fg: "text-emerald-600 dark:text-emerald-400",
+        bg: "bg-success-light",
+        fg: "text-success",
       };
     case "failed":
       return {
@@ -380,8 +387,8 @@ function statusVisual(s: LoadStatus) {
     case "loading":
       return {
         icon: Loader2,
-        bg: "bg-amber-500/10",
-        fg: "text-amber-600 dark:text-amber-400",
+        bg: "bg-accent/10",
+        fg: "text-accent",
       };
     default:
       return {
