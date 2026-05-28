@@ -192,9 +192,9 @@ make rebuild        # 清理所有缓存并重新安装依赖
 
 | 服务 | API URL 示例 | 推荐模型 |
 | --- | --- | --- |
-| OpenAI | `https://api.openai.com/v1` | `gpt-4o-mini` |
-| DeepSeek | `https://api.deepseek.com/v1` | `deepseek-chat` |
-| 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` |
+| OpenAI | `https://api.openai.com/v1` | `gpt最新系列轻量模型` |
+| DeepSeek | `https://api.deepseek.com/v1` | `deepseek最新系列轻量模型` |
+| 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen最新系列轻量模型` |
 
 实际请求地址由工具自动拼接为 `{api_url}/chat/completions`，默认 30 秒超时。
 
@@ -333,4 +333,4 @@ gut-loader/
 
 ## 📜 许可证
 
-内部项目 / TBD。
+MIT。
